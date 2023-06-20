@@ -1,38 +1,41 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ImageCombiner : MonoBehaviour
 {
-    public Texture2D[] sourceImages; // Array of source images to combine
+    public Texture2D[] _sourceImages;
     public Image _image;
-
-    [ContextMenu("Combine")]
-    private void CombineImages()
+    public void CombineImages(int numberOfDots, bool teamUp, bool teamRight, bool teamBottom, bool teamLeft)
     {
-        Texture2D combinedImage = new Texture2D(sourceImages[0].width, sourceImages[0].height);
+        List<Texture2D> images = new List<Texture2D>
+        {
+            _sourceImages[numberOfDots - 1]
+        };
 
-        // Loop through each pixel of the combined image
+        if (!teamUp)images.Add(_sourceImages[(int)ImagesIndexes.TopLine]);
+        if (!teamRight) images.Add(_sourceImages[(int)ImagesIndexes.RightLine]);
+        if (!teamBottom) images.Add(_sourceImages[(int)ImagesIndexes.BottomLine]);
+        if (!teamLeft) images.Add(_sourceImages[(int)ImagesIndexes.LeftLine]);
+
+        Texture2D combinedImage = new Texture2D(_sourceImages[0].width, _sourceImages[0].height);
+
         for (int y = 0; y < combinedImage.height; y++)
         {
             for (int x = 0; x < combinedImage.width; x++)
             {
-                Color pixelColor = Color.black; // Default color if no source image has pixel at (x, y)
+                Color pixelColor = Color.black; 
 
-                // Loop through each source image
-                for (int i = 0; i < sourceImages.Length; i++)
+                for (int i = 0; i < images.Count; i++)
                 {
-                    // Get the color of the pixel from the current source image
-                    Color sourceColor = sourceImages[i].GetPixel(x, y);
+                    Color sourceColor = images[i].GetPixel(x, y);
 
-                    // If the current source image has a non-transparent pixel at (x, y), use that color
                     if (sourceColor.a > 0)
                     {
                         pixelColor = sourceColor;
-                        break; // Exit the loop once a non-transparent pixel is found
+                        break;
                     }
                 }
-
-                // Set the color of the pixel in the combined image
                 combinedImage.SetPixel(x, y, pixelColor);
             }
         }
@@ -40,5 +43,35 @@ public class ImageCombiner : MonoBehaviour
         combinedImage.Apply();
 
         _image.sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedImage.width, combinedImage.height), Vector2.zero);
+    }
+
+    public void ClearImage(Texture2D sourceImage)
+    {
+        Texture2D clearedImage = new Texture2D(sourceImage.width, sourceImage.height);
+
+        for (int y = 0; y < clearedImage.height; y++)
+        {
+            for (int x = 0; x < clearedImage.width; x++)
+            {
+                Color pixelColor = Color.black;
+                clearedImage.SetPixel(x, y, pixelColor);
+            }
+        }
+
+        clearedImage.Apply();
+
+        _image.sprite = Sprite.Create(clearedImage, new Rect(0, 0, clearedImage.width, clearedImage.height), Vector2.zero);
+    }
+
+    private enum ImagesIndexes
+    {
+        OneDice = 0,
+        TwoDice = 1,
+        ThreeDice = 2,
+        FourDice = 3,
+        TopLine = 4,
+        RightLine = 5,
+        BottomLine = 6,
+        LeftLine = 7
     }
 }

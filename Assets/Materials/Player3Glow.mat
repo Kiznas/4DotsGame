@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NeonGlow
+  m_Name: Player3Glow
   m_Shader: {fileID: -6465566751694194690, guid: c87eedf9a2a4430499b27bbc47f52132, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -93,7 +93,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 0, g: 1024, b: 648.5332, a: 1}
+    - _Color: {r: 0, g: 133.43561, b: 133.43561, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
