@@ -1,13 +1,8 @@
-using EventHandler;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
-using Unity.Burst.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using EventHandler;
 using UnityEngine.UI;
+using System.Collections;
 
 public class CellInstance : MonoBehaviour
 {
@@ -20,13 +15,15 @@ public class CellInstance : MonoBehaviour
     {
         public event Action DotAdded;
         public event Action TeamColorChanged;
+        public event Action UpdatedImage;
         private int _posRow;
         private int _posColumn;
         private bool _filled;
         private int _numberOfDots;
-        private Color _teamColor;
+        private Color _teamColor = Color.white;
         private Material _material;
-        private (bool, bool, bool, bool) _neighbours;
+        private (Cell, Cell, Cell, Cell) _neighbours;
+        private Team _team;
 
         public int PosRow
         {
@@ -43,11 +40,16 @@ public class CellInstance : MonoBehaviour
             get { return _filled; }
             set { _filled = value; }
         }
+        public Team CellTeam
+        {
+           get { return _team; }
+           set { _team = value; }
+        }
         public int NumberOfDots
         {
             get { return _numberOfDots; }
         }
-        public (bool top, bool right, bool bottom, bool left) Neighbours
+        public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
         {
             get { return _neighbours; }
             set { _neighbours = value; }
@@ -71,20 +73,33 @@ public class CellInstance : MonoBehaviour
             _numberOfDots++;
             DotAdded.Invoke();
         }
-
-        public void SetTeam(Color teamColor, Material material)
+        public void SetTeam(Color teamColor, Material material, Team team)
         {
+            _team = team;
             _teamColor = teamColor;
             _material = material;
             _material.color = _teamColor;
             TeamColorChanged.Invoke();
         }
-
         public void ClearCell()
         {
-            _teamColor = Color.white;
+            _team = Team.None;
+            _teamColor = Color.white; 
             _material = null;
             _numberOfDots = 0;
+        }
+        public void UpdateImage()
+        {
+            UpdatedImage.Invoke();
+        }
+
+        public enum Team
+        {
+            None,
+            Team1,
+            Team2,
+            Team3,
+            Team4
         }
     }
 
@@ -97,26 +112,43 @@ public class CellInstance : MonoBehaviour
         _cell = new Cell(row, column);
         _cell.DotAdded += DotAdded;
         _cell.TeamColorChanged += TeamChanged;
+        _cell.UpdatedImage += UpdateImage;
         EventAggregator.Post(this, new CellAdded { CellInstance = _cell });
     }
 
     private void OnClick()
     {
-        _cell.AddDot();
-        Debug.Log($"Row{_cell.PosRow + 1}, Collumn {_cell.PosColumn + 1}");
+        if (_cell.TeamColor != Color.white)
+        {
+            _cell.AddDot();
+            Debug.Log($"Row{_cell.PosRow + 1}, Collumn {_cell.PosColumn + 1}, Team {_cell.TeamColor}, neighbours {_cell.Neighbours}");
+        }
+
+        Debug.Log($"Row{_cell.PosRow + 1}, Collumn {_cell.PosColumn + 1}, Team {_cell.TeamColor}, neighbours {_cell.Neighbours}");
+
     }
     private void DotAdded()
     {
         if (_cell.NumberOfDots >= 4)
         {
-            EventAggregator.Post(this, new AddToNearbyCells { CellInstance = _cell });
-            _cell.ClearCell();
-            _imageCombiner.ClearImage((Texture2D)_image.mainTexture);
+            UpdateImage();
+            StartCoroutine(AddCells());
         }
         else
         {
-            EventAggregator.Post(this, new CheckNearbyCells { CellInstance = _cell });
-            _imageCombiner.CombineImages(_cell.NumberOfDots, _cell.Neighbours.top, _cell.Neighbours.right, _cell.Neighbours.bottom, _cell.Neighbours.left);
+            UpdateImage();
+        }
+    }
+
+    public void UpdateImage()
+    {
+        if(_cell.NumberOfDots != 0) 
+        {
+            _imageCombiner.CombineImages(_cell.NumberOfDots,
+                                     _cell.Neighbours.top?.CellTeam == _cell.CellTeam,
+                                     _cell.Neighbours.right?.CellTeam == _cell.CellTeam,
+                                     _cell.Neighbours.bottom?.CellTeam == _cell.CellTeam,
+                                     _cell.Neighbours.left?.CellTeam == _cell.CellTeam);
         }
     }
 
@@ -124,6 +156,22 @@ public class CellInstance : MonoBehaviour
     {
         _image.material = _cell.Material;
     }
+
+    IEnumerator AddCells()
+    {
+        yield return new WaitForSeconds(0.3f);
+
+        Cell.Team cellTeam = _cell.CellTeam;
+        int posCol = _cell.PosColumn;
+        int posRow = _cell.PosRow;
+        Color color = _cell.TeamColor;
+        Material cellMat = _cell.Material;
+
+        _cell.ClearCell();
+
+        yield return new WaitForSeconds(0.1f);
+
+        EventAggregator.Post(this, new AddToNearbyCells { posColumn = posCol, posRow = posRow, teamColor = color, material = cellMat, team = cellTeam, neighbours = _cell.Neighbours });
+        _imageCombiner.ClearImage((Texture2D)_image.mainTexture);
+    }
 }
-
-

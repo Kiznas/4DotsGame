@@ -9,9 +9,12 @@ public class GridGenerator : MonoBehaviour
 
     [SerializeField] private GridLayoutGroup _gridLayout;
     [SerializeField] private RectTransform _containerRect;
+
+    [SerializeField] private Button gridButton;
+
     private void Start()
     {
-        GenerateGrid();
+        gridButton.onClick.AddListener(GenerateGrid);
     }
 
     [ContextMenu("ReGenerate grid")]

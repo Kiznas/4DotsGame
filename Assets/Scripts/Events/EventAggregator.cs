@@ -30,7 +30,11 @@ namespace EventHandler
         }
     }
     //EVENTS//
-    public class CellAdded { public CellInstance.Cell CellInstance; };
-    public class AddToNearbyCells { public CellInstance.Cell CellInstance; }
-    public class CheckNearbyCells { public CellInstance.Cell CellInstance; }
+    public class CellAdded { public CellInstance.Cell CellInstance; }
+    public class AddToNearbyCells { public int posColumn, posRow;
+        public Color teamColor;
+        public Material material;
+        public CellInstance.Cell.Team team;
+        public (CellInstance.Cell, CellInstance.Cell, CellInstance.Cell, CellInstance.Cell) neighbours; }
+    //public class CheckNearbyCells { public CellInstance.Cell CellInstance; }
 }

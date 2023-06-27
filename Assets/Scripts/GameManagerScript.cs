@@ -2,7 +2,9 @@ using EventHandler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManagerScript : MonoBehaviour
 {
@@ -24,16 +26,26 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] private Color _3PlayerColor;
     [SerializeField] private Color _4PlayerColor;
 
+    [Header("Buttons")]
+    [SerializeField] private Button InitializeButton;
+    [SerializeField] private Button CellsButton;
+
     private int _cellIndex;
     private int _gridSize;
 
-    void Start()
+    private void Start()
+    {
+        InitializeButton.onClick.AddListener(InitializeComponents);
+        CellsButton.onClick.AddListener(AddCells);
+    }
+
+    [ContextMenu("Intialize Components")]
+    private void InitializeComponents()
     {
         _gridSize = gridGenerator._gridSize;
         _cells = new CellInstance.Cell[_gridSize * _gridSize];
         EventAggregator.Subscribe<CellAdded>(AddCellToArray);
         EventAggregator.Subscribe<AddToNearbyCells>(AddToNearbyCells);
-        EventAggregator.Subscribe<CheckNearbyCells>(CheckNearbyCells);
 
         _1PlayerColor = _colorizer.AddGlowing(_1PlayerColor);
         _2PlayerColor = _colorizer.AddGlowing(_2PlayerColor);
@@ -46,19 +58,19 @@ public class GameManagerScript : MonoBehaviour
         _cells[_cellIndex++] = _cell.CellInstance;
     }
 
-    [ContextMenu("Method")]
-    private void Method()
+    [ContextMenu("AddCells")]
+    private void AddCells()
     {
         if (_numberOfPlayers >= 2)
         {
-            AddDotsToCells(1, 1, _1PlayerColor, _1PlayerMaterial);
-            AddDotsToCells(_gridSize - 2, _gridSize - 2, _2PlayerColor, _2PlayerMaterial);
-            if(_numberOfPlayers >= 3)
+            AddDotsToCells(1, 1, _1PlayerColor, _1PlayerMaterial, CellInstance.Cell.Team.Team1);
+            AddDotsToCells(_gridSize - 2, _gridSize - 2, _2PlayerColor, _2PlayerMaterial, CellInstance.Cell.Team.Team2);
+            if (_numberOfPlayers >= 3)
             {
-                AddDotsToCells(1, _gridSize - 2, _3PlayerColor, _3PlayerMaterial);
+                AddDotsToCells(1, _gridSize - 2, _3PlayerColor, _3PlayerMaterial, CellInstance.Cell.Team.Team3);
                 if (_numberOfPlayers >= 4)
                 {
-                    AddDotsToCells(_gridSize - 2, 1, _4PlayerColor, _4PlayerMaterial);
+                    AddDotsToCells(_gridSize - 2, 1, _4PlayerColor, _4PlayerMaterial, CellInstance.Cell.Team.Team4);
                 }
             }
         }
@@ -71,46 +83,57 @@ public class GameManagerScript : MonoBehaviour
             if (cell.PosColumn == posColumn && cell.PosRow == posRow)
             {
                 return cell;
-            }        
+            }
         }
         return null;
     }
 
-    private void AddDotsToCells(int posColumn, int posRow, Color teamColor, Material material)
+    private void AddDotsToCells(int posColumn, int posRow, Color teamColor, Material material, CellInstance.Cell.Team team)
     {
         CellInstance.Cell cell = GetCellAtPos(posColumn, posRow);
-        cell.SetTeam(teamColor, material);
+        cell.SetTeam(teamColor, material, team);
         cell.AddDot();
     }
 
     private void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
     {
-        CellInstance.Cell cellInstance = cellData.CellInstance;
-        foreach (var cell in _cells)
+        List<CellInstance.Cell> cells = new List<CellInstance.Cell>
         {
-            if (IsAdjacent(cell, cellInstance))
+            cellData.neighbours.Item1,
+            cellData.neighbours.Item2,
+            cellData.neighbours.Item3,
+            cellData.neighbours.Item4
+        };
+        foreach (var cell in cells)
+        {
+            if (cell?.NumberOfDots == 0)
             {
-                if (cell.NumberOfDots == 0)
-                {
-                    cell.SetTeam(cellInstance.TeamColor, cellInstance.Material);
-                    cell.AddDot();
-                }
-                else if (cell.TeamColor == cellInstance.TeamColor)
-                {
-                    cell.AddDot();
-                }
-                else
-                {
-                    cell.SetTeam(cellInstance.TeamColor, cellInstance.Material);
-                    cell.AddDot();
-                }
+                cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
+                cell.AddDot();
+            }
+            else if (cell?.TeamColor == cellData.teamColor)
+            {
+                cell.AddDot();
+            }
+            else if (cell != null)
+            {
+                cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
+                cell.AddDot();
             }
         }
     }
 
-    private void CheckNearbyCells(object arg1, CheckNearbyCells cellInstance)
+    [ContextMenu("AddNeighboursToCells")]
+    private void AddNeighboursToCells()
     {
-        CellInstance.Cell cell = cellInstance.CellInstance;
+        foreach (var cell in _cells)
+        {
+            AddNeighbours(cell);
+        }
+    }
+
+    private void AddNeighbours(CellInstance.Cell cell)
+    {
         (int posX, int posY) topPos = (cell.PosColumn, cell.PosRow - 1);
         (int posX, int posY) rightPos = (cell.PosColumn + 1, cell.PosRow);
         (int posX, int posY) bottomPos = (cell.PosColumn, cell.PosRow + 1);
@@ -119,40 +142,20 @@ public class GameManagerScript : MonoBehaviour
         {
             if (neighbourCell.PosColumn == topPos.posX && neighbourCell.PosRow == topPos.posY)
             {
-                if (neighbourCell.TeamColor == cell.TeamColor)
-                {
-                    cell.Neighbours = (true, cell.Neighbours.right, cell.Neighbours.bottom, cell.Neighbours.left);
-                }
+                cell.Neighbours = (neighbourCell, cell.Neighbours.right, cell.Neighbours.bottom, cell.Neighbours.left);
             }
             if (neighbourCell.PosColumn == rightPos.posX && neighbourCell.PosRow == rightPos.posY)
             {
-                if (neighbourCell.TeamColor == cell.TeamColor)
-                {
-                    cell.Neighbours = (cell.Neighbours.top, true, cell.Neighbours.bottom, cell.Neighbours.left);
-                }
+                cell.Neighbours = (cell.Neighbours.top, neighbourCell, cell.Neighbours.bottom, cell.Neighbours.left);
             }
             if (neighbourCell.PosColumn == bottomPos.posX && neighbourCell.PosRow == bottomPos.posY)
             {
-                if (neighbourCell.TeamColor == cell.TeamColor)
-                {
-                    cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, true, cell.Neighbours.left);
-                }
+                cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, neighbourCell, cell.Neighbours.left);
             }
             if (neighbourCell.PosColumn == leftPos.posX && neighbourCell.PosRow == leftPos.posY)
             {
-                if (neighbourCell.TeamColor == cell.TeamColor)
-                {
-                    cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, cell.Neighbours.bottom, true);
-                }
+                cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, cell.Neighbours.bottom, neighbourCell);
             }
         }
     }
-
-    private bool IsAdjacent(CellInstance.Cell cell, CellInstance.Cell cell2)
-    {
-        int columnDifference = Mathf.Abs(cell.PosColumn + 1);
-        int rowDifference = Mathf.Abs(cell.PosRow - cell2.PosRow);
-        return columnDifference == -1 && rowDifference == -1;
-    }
-
 }
