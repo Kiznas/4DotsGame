@@ -1,17 +1,18 @@
 using EventHandler;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManagerScript : MonoBehaviour
 {
+    [Header("Grid Size & Player Num")]
+    [Range(5, 9)]
+    [SerializeField] public int GridSize; 
     [Range(2, 4)]
-    [SerializeField] private int _numberOfPlayers;
-    [SerializeField] private CellInstance.Cell[] _cells;
-    [SerializeField] private GridGenerator gridGenerator;
+    [SerializeField] public int NumberOfPlayers;
+
+    [Header("Essentials")]
+    [SerializeField] private GridGenerator _gridGenerator;
     [SerializeField] private Colorizer _colorizer;
 
     [Header("Materials")]
@@ -27,30 +28,26 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] private Color _4PlayerColor;
 
     [Header("Buttons")]
-    [SerializeField] private Button InitializeButton;
-    [SerializeField] private Button CellsButton;
+    [SerializeField] private Button _initializeButton;
+
+    private CellInstance.Cell[] _cells;
 
     private int _cellIndex;
-    private int _gridSize;
-
     private void Start()
     {
-        InitializeButton.onClick.AddListener(InitializeComponents);
-        CellsButton.onClick.AddListener(AddCells);
+        _initializeButton.onClick.AddListener(InitializeComponents);
     }
 
     [ContextMenu("Intialize Components")]
     private void InitializeComponents()
     {
-        _gridSize = gridGenerator._gridSize;
-        _cells = new CellInstance.Cell[_gridSize * _gridSize];
+        _cells = new CellInstance.Cell[GridSize * GridSize];
         EventAggregator.Subscribe<CellAdded>(AddCellToArray);
         EventAggregator.Subscribe<AddToNearbyCells>(AddToNearbyCells);
 
-        _1PlayerColor = _colorizer.AddGlowing(_1PlayerColor);
-        _2PlayerColor = _colorizer.AddGlowing(_2PlayerColor);
-        _3PlayerColor = _colorizer.AddGlowing(_3PlayerColor);
-        _4PlayerColor = _colorizer.AddGlowing(_4PlayerColor);
+        _gridGenerator.GenerateGrid();
+
+        AddCells();
     }
 
     private void AddCellToArray(object arg1, CellAdded _cell)
@@ -58,19 +55,23 @@ public class GameManagerScript : MonoBehaviour
         _cells[_cellIndex++] = _cell.CellInstance;
     }
 
-    [ContextMenu("AddCells")]
     private void AddCells()
     {
-        if (_numberOfPlayers >= 2)
+        foreach (var cell in _cells)
         {
-            AddDotsToCells(1, 1, _1PlayerColor, _1PlayerMaterial, CellInstance.Cell.Team.Team1);
-            AddDotsToCells(_gridSize - 2, _gridSize - 2, _2PlayerColor, _2PlayerMaterial, CellInstance.Cell.Team.Team2);
-            if (_numberOfPlayers >= 3)
+            AddNeighbours(cell);
+        }
+
+        if (NumberOfPlayers >= 2)
+        {
+            AddDotsToCells(1, 1, _1PlayerColor, _1PlayerMaterial, Team.Team1);
+            AddDotsToCells(GridSize - 2, GridSize - 2, _2PlayerColor, _2PlayerMaterial, Team.Team2);
+            if (NumberOfPlayers >= 3)
             {
-                AddDotsToCells(1, _gridSize - 2, _3PlayerColor, _3PlayerMaterial, CellInstance.Cell.Team.Team3);
-                if (_numberOfPlayers >= 4)
+                AddDotsToCells(1, GridSize - 2, _3PlayerColor, _3PlayerMaterial, Team.Team3);
+                if (NumberOfPlayers >= 4)
                 {
-                    AddDotsToCells(_gridSize - 2, 1, _4PlayerColor, _4PlayerMaterial, CellInstance.Cell.Team.Team4);
+                    AddDotsToCells(GridSize - 2, 1, _4PlayerColor, _4PlayerMaterial, Team.Team4);
                 }
             }
         }
@@ -88,15 +89,18 @@ public class GameManagerScript : MonoBehaviour
         return null;
     }
 
-    private void AddDotsToCells(int posColumn, int posRow, Color teamColor, Material material, CellInstance.Cell.Team team)
+    private void AddDotsToCells(int posColumn, int posRow, Color teamColor, Material material, Team team)
     {
         CellInstance.Cell cell = GetCellAtPos(posColumn, posRow);
         cell.SetTeam(teamColor, material, team);
+        cell.AddDot();
+        cell.AddDot();
         cell.AddDot();
     }
 
     private void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
     {
+        bool setNextTurn = true;
         List<CellInstance.Cell> cells = new List<CellInstance.Cell>
         {
             cellData.neighbours.Item1,
@@ -106,29 +110,49 @@ public class GameManagerScript : MonoBehaviour
         };
         foreach (var cell in cells)
         {
-            if (cell?.NumberOfDots == 0)
+            if(cell != null)
             {
-                cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
-                cell.AddDot();
-            }
-            else if (cell?.TeamColor == cellData.teamColor)
-            {
-                cell.AddDot();
-            }
-            else if (cell != null)
-            {
-                cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
-                cell.AddDot();
+                if(cell?.NumberOfDots == 3)
+                {
+                    setNextTurn = false;
+                }
+                if (cell?.NumberOfDots == 0)
+                {
+                    cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
+                    cell.AddDot();
+                }
+                else if (cell?.CellTeam == cellData.team)
+                {
+                    cell.AddDot();
+                }
+                else
+                {
+                    cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
+                    cell.AddDot();
+                }
             }
         }
-    }
 
-    [ContextMenu("AddNeighboursToCells")]
-    private void AddNeighboursToCells()
-    {
+        var aliveTeams = new HashSet<Team>();
+
         foreach (var cell in _cells)
         {
-            AddNeighbours(cell);
+            cell.UpdateImage();
+            aliveTeams.Add(cell.CellTeam);
+        }
+
+        for (int i = 1; i <= 4; i++)
+        {
+            var playerName = "PLAYER" + i;
+            if (!aliveTeams.Contains((Team)i))
+            {
+                EventAggregator.Post(this, new PlayerLost { PlayerName = playerName });
+            }
+        }
+
+        if (setNextTurn)
+        {
+            EventAggregator.Post(this, new NextTurn { cellTeam = cellData.team });
         }
     }
 

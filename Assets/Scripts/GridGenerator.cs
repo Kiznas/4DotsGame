@@ -3,23 +3,18 @@ using UnityEngine.UI;
 
 public class GridGenerator : MonoBehaviour
 {
-    [Range(5, 9)]
-    [SerializeField] public int _gridSize; // Adjust this value to change the grid size
-    [SerializeField] private GameObject _cellPrefab; // Prefab for the grid cell
+    [SerializeField] private GameObject _cellPrefab;
+    [SerializeField] private GameManagerScript _gameManager;
 
     [SerializeField] private GridLayoutGroup _gridLayout;
     [SerializeField] private RectTransform _containerRect;
 
-    [SerializeField] private Button gridButton;
+    private int _gridSize;
 
-    private void Start()
+    public void GenerateGrid()
     {
-        gridButton.onClick.AddListener(GenerateGrid);
-    }
+        _gridSize = _gameManager.GridSize;
 
-    [ContextMenu("ReGenerate grid")]
-    private void GenerateGrid()
-    {
         ClearGrid();
 
         // Calculate the size of each cell based on the panel size

@@ -29,12 +29,18 @@ namespace EventHandler
             }
         }
     }
+
     //EVENTS//
     public class CellAdded { public CellInstance.Cell CellInstance; }
-    public class AddToNearbyCells { public int posColumn, posRow;
+    public class PlayerLost { public string PlayerName; }
+    public class GetTurn { public GameStates gameState; }
+    public class NextTurn { public Team cellTeam; }
+    public class AddToNearbyCells 
+    { 
+        public int posColumn, posRow;
         public Color teamColor;
         public Material material;
-        public CellInstance.Cell.Team team;
-        public (CellInstance.Cell, CellInstance.Cell, CellInstance.Cell, CellInstance.Cell) neighbours; }
-    //public class CheckNearbyCells { public CellInstance.Cell CellInstance; }
+        public Team team;
+        public (CellInstance.Cell, CellInstance.Cell, CellInstance.Cell, CellInstance.Cell) neighbours; 
+    }
 }
