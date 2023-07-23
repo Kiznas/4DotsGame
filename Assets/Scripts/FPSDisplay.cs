@@ -13,10 +13,10 @@ public class FPSDisplay : MonoBehaviour
 
     private void OnGUI()
     {
-        float msec = deltaTime * 1000.0f;
         float fps = 1.0f / deltaTime;
-        string text = string.Format("{0:0.0} ms {1:0.} fps", msec, fps);
+        string text = string.Format("FPS : {0:0.00}", fps);
 
         _textOfFps.text = text;
     }
+
 }

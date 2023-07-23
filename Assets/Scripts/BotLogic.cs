@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class BotLogic : MonoBehaviour
 {
@@ -54,59 +55,93 @@ public class BotLogic : MonoBehaviour
         TakeBotTurn(team);
     }
 
-    private void TakeBotTurn(Team _botTeam)
+    private void TakeBotTurn(Team botTeam)
     {
-        var opponentCells = _gameManager.Cells.Where(cell => cell.CellTeam != _botTeam).ToList();
-        var botCells = _gameManager.Cells.Where(cell => cell.CellTeam == _botTeam).ToList();
+        var opponentCells = _gameManager.Cells.Where(cell => cell.CellTeam != botTeam).ToList();
+        var botCells = _gameManager.Cells.Where(cell => cell.CellTeam == botTeam).ToList();
 
-        var botAndOpponentCellWith3Dots = botCells.FirstOrDefault(botCell => botCell.NumberOfDots == 3 && opponentCells.Any(opponentCell => botCell.HasAdjacentCellWith3Dots(opponentCell) && opponentCell.NumberOfDots == 3));
-        if (botAndOpponentCellWith3Dots != null)
+        // Variant 1: Check if there is a bot cell with 3 dots and adjacent to an opponent cell with 3 dots
+        var botCellWith3DotsAndAdjacentToOpponentCellWith3Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 3);
+        if (botCellWith3DotsAndAdjacentToOpponentCellWith3Dots != null)
         {
-            GiveTurnIfNotThreeDots(botAndOpponentCellWith3Dots, _botTeam);
-            botAndOpponentCellWith3Dots.AddDot();
+            ProcessBotCellTurn(botCellWith3DotsAndAdjacentToOpponentCellWith3Dots, botTeam);
+            botCellWith3DotsAndAdjacentToOpponentCellWith3Dots.AddDot();
             return;
         }
 
-        var botCellWith2DotsAndAdjacentToOpponentCell = botCells.FirstOrDefault(botCell => botCell.NumberOfDots == 2 && opponentCells.Any(opponentCell => botCell.HasAdjacentCellWith3Dots(opponentCell)));
-        if (botCellWith2DotsAndAdjacentToOpponentCell != null)
+        // Variant 2: Check if there is a bot cell with 2 dots and adjacent to an opponent cell with 3 dots
+        var botCellWith2DotsAndAdjacentToOpponentCellWith3Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 2);
+        if (botCellWith2DotsAndAdjacentToOpponentCellWith3Dots != null)
         {
-            GiveTurnIfNotThreeDots(botCellWith2DotsAndAdjacentToOpponentCell, _botTeam);
-            botCellWith2DotsAndAdjacentToOpponentCell.AddDot();
+            ProcessBotCellTurn(botCellWith2DotsAndAdjacentToOpponentCellWith3Dots, botTeam);
+            botCellWith2DotsAndAdjacentToOpponentCellWith3Dots.AddDot();
             return;
         }
 
-        var opponentCellWith3Dots = opponentCells.FirstOrDefault(opponentCell => opponentCell.NumberOfDots == 3);
+        // Variant 3: Check if there is an opponent cell with 3 dots and attack it if there is a bot cell adjacent to it
+        var opponentCellWith3Dots = opponentCells.FirstOrDefault(cell => cell.NumberOfDots == 3);
         if (opponentCellWith3Dots != null)
         {
-            var botCellToAttack = botCells.FirstOrDefault(botCell => botCell.HasAdjacentCellWith3Dots(opponentCellWith3Dots));
+            var botCellToAttack = botCells.FirstOrDefault(cell => cell.HasAdjacentCellWith3Dots(opponentCellWith3Dots));
             if (botCellToAttack != null)
             {
-                GiveTurnIfNotThreeDots(botCellToAttack, _botTeam);
+                ProcessBotCellTurn(botCellToAttack, botTeam);
                 botCellToAttack.AddDot();
                 return;
             }
         }
 
-        var botCellWith2DotsAdjacentToOpponentCellWith2Dots = botCells.FirstOrDefault(botCell => botCell.NumberOfDots == 2 && opponentCells.Any(opponentCell => botCell.HasAdjacentCellWith3Dots(opponentCell) && opponentCell.NumberOfDots == 2));
-        if (botCellWith2DotsAdjacentToOpponentCellWith2Dots != null)
+        // Variant 4: Check if there is a bot cell with 2 dots and adjacent to an opponent cell with 2 dots
+        var botCellWith2DotsAndAdjacentToOpponentCellWith2Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 2);
+        if (botCellWith2DotsAndAdjacentToOpponentCellWith2Dots != null)
         {
-            GiveTurnIfNotThreeDots(botCellWith2DotsAdjacentToOpponentCellWith2Dots, _botTeam);
-            botCellWith2DotsAdjacentToOpponentCellWith2Dots.AddDot();
+            ProcessBotCellTurn(botCellWith2DotsAndAdjacentToOpponentCellWith2Dots, botTeam);
+            botCellWith2DotsAndAdjacentToOpponentCellWith2Dots.AddDot();
             return;
         }
 
-        var closestOpponentCell = opponentCells.OrderBy(opponentCell => botCells.Min(botCell => Vector2.Distance(new Vector2(botCell.PosColumn, botCell.PosRow),
-            new Vector2(opponentCell.PosColumn, opponentCell.PosRow)))).FirstOrDefault();
-        if (closestOpponentCell != null)
+        // Variant 5: Find the closest bot cell to an opponent cell and attack it
+        var closestBotCellToOpponentCell = FindClosestBotCellToOpponentCell(botCells, opponentCells);
+        if (closestBotCellToOpponentCell != null)
         {
-            var botCellToMove = botCells.OrderBy(botCell => Vector2.Distance(new Vector2(botCell.PosColumn, botCell.PosRow), new Vector2(closestOpponentCell.PosColumn, closestOpponentCell.PosRow))).FirstOrDefault();
-            if (botCellToMove != null)
+            ProcessBotCellTurn(closestBotCellToOpponentCell, botTeam);
+            closestBotCellToOpponentCell.AddDot();
+            return;
+        }
+    }
+
+    private Cell FindClosestBotCellToOpponentCell(List<Cell> botCells, List<Cell> opponentCells)
+    {
+        Cell closestBotCell = null;
+        float minDistance = float.MaxValue;
+
+        foreach (var botCell in botCells)
+        {
+            float distanceToOpponent = botCell.GetDistanceToOpponent(opponentCells);
+            if (distanceToOpponent < minDistance)
             {
-                GiveTurnIfNotThreeDots(botCellToMove, _botTeam);
-                botCellToMove.AddDot();
-                return;
+                minDistance = distanceToOpponent;
+                closestBotCell = botCell;
             }
         }
+
+        return closestBotCell;
+    }
+
+    private Cell GetBotCellWithDotsAndAdjacentOpponentCellWithDots(List<Cell> botCells, List<Cell> opponentCells, int dots)
+    {
+        return botCells.FirstOrDefault(botCell =>
+            botCell.NumberOfDots == dots &&
+            opponentCells.Any(opponentCell =>
+                botCell.HasAdjacentCellWith3Dots(opponentCell) &&
+                opponentCell.NumberOfDots == dots
+            )
+        );
+    }
+
+    private void ProcessBotCellTurn(Cell botCell, Team botTeam)
+    {
+        GiveTurnIfNotThreeDots(botCell, botTeam);
     }
 
     private void GiveTurnIfNotThreeDots(Cell botCell, Team team)

@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -29,10 +31,19 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] private Slider _playersNumberSlider;
     [SerializeField] private Slider _gridSizeSlider;
 
+    [SerializeField] private Button _customGridButton;
+
     [SerializeField] private Toggle _performanceMod;
 
     [Header("Background")]
     [SerializeField] private GameObject _background;
+
+    [SerializeField] private GameObject _inputFields;
+    [SerializeField] private TMP_InputField _inputRow;
+    [SerializeField] private TMP_InputField _inputCollumn;
+
+    private string _regular = "REGULAR";
+    private string _custom = "CUSTOM";
 
     public Cell[] Cells;
     private Queue<Cell> cellQueue;
@@ -48,6 +59,7 @@ public class GameManagerScript : MonoBehaviour
         _playersNumberSlider.onValueChanged.AddListener(ChangePlayerNumber);
         _gridSizeSlider.onValueChanged.AddListener(ChangeGridSize);
         _restart.onClick.AddListener(RestartGame);
+        _customGridButton.onClick.AddListener(CustomGridSettings);
         Application.targetFrameRate = 60;
     }
 
@@ -79,61 +91,62 @@ public class GameManagerScript : MonoBehaviour
 
     private void InitializeComponents()
     {
-        Cells = new Cell[gridSize * gridSize];
+        int rowsSize, columnsSize;
+
+        if (_customGridButton.CompareTag(_regular))
+        {
+            rowsSize = gridSize;
+            columnsSize = gridSize;
+        }
+        else
+        {
+            rowsSize = int.Parse(_inputRow.text);
+            columnsSize = int.Parse(_inputCollumn.text);
+        }
+
+        Cells = new Cell[rowsSize * columnsSize];
+
         EventAggregator.Subscribe<CellAdded>(AddCellToArray);
         EventAggregator.Subscribe<AddToNearbyCells>(AddToNearbyCells);
         EventAggregator.Post(this, new Initialization { });
 
         cellQueue = new Queue<Cell>();
 
-        _gridGenerator.GenerateGrid();
-        AddCells();
+        _gridGenerator.GenerateGrid(rowsSize, columnsSize);
+        AddCells(rowsSize, columnsSize, numberOfPlayers);
+
         _background.SetActive(true);
         _gridSizeSlider.gameObject.SetActive(false);
         _initializeButton.gameObject.SetActive(false);
         _playersNumberSlider.gameObject.SetActive(false);
+        _inputFields.SetActive(false);
     }
 
     private void AddCellToArray(object arg1, CellAdded _cell)
     {
-        Cells[_cellIndex++] = _cell.CellInstance;
+        Cells[_cellIndex++] = _cell.Cell;
     }
 
-    private void AddCells()
+    private void AddCells(int rows, int columns, int numberOfPlayers)
     {
         foreach (var cell in Cells)
         {
             AddNeighbours(cell);
         }
 
+        int[] playerPosX = { 1, rows - 2, 1, rows - 2 };
+        int[] playerPosY = { 1, columns - 2, columns - 2, 1 };
+
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            int posX, posY;
-            switch (i)
-            {
-                case 0:
-                    posX = 1;
-                    posY = 1;
-                    break;
-                case 1:
-                    posX = gridSize - 2;
-                    posY = gridSize - 2;
-                    break;
-                case 2:
-                    posX = 1;
-                    posY = gridSize - 2;
-                    break;
-                case 3:
-                    posX = gridSize - 2;
-                    posY = 1;
-                    break;
-                default:
-                    posX = posY = 1;
-                    break;
-            }
+            int posX = playerPosX[i % 4];
+            int posY = playerPosY[i % 4];
+
             AddDotsToCells(posX, posY, PlayerColors[i], PlayerMaterials[i], (Team)i + 1);
         }
     }
+
+
 
     private Cell GetCellAtPos(int posColumn, int posRow)
     {
@@ -260,5 +273,22 @@ public class GameManagerScript : MonoBehaviour
             GetCellAtPos(posX - 1, posY)
         );
     }
-}
 
+    private void CustomGridSettings()
+    {
+        if (_customGridButton.CompareTag(_regular))
+        {
+            _gridSizeSlider.gameObject.SetActive(false);
+            _inputFields.SetActive(true);
+            _customGridButton.tag = _custom;
+            _customGridButton.GetComponentInChildren<TMP_Text>().text = _regular;
+        }
+        else if (_customGridButton.CompareTag(_custom))
+        {
+            _gridSizeSlider.gameObject.SetActive(true);
+            _inputFields.SetActive(false);
+            _customGridButton.tag = _regular;
+            _customGridButton.GetComponentInChildren<TMP_Text>().text = _custom;
+        }
+    }
+}

@@ -117,7 +117,7 @@ public class PlayersTurnSystem : MonoBehaviour
 
     private void ChangeTurn(object arg1, NextTurn turnData)
     {
-        if (teamsDictionary[GameState] == turnData.cellTeam)
+        if (GameState != GameStates.WIN && teamsDictionary[GameState] == turnData.cellTeam)
         {
             ChangeTurnToNextPlayer();
         }

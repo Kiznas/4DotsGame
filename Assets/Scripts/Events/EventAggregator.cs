@@ -32,7 +32,7 @@ namespace EventHandler
     }
 
     //EVENTS//
-    public class CellAdded { public Cell CellInstance; }
+    public class CellAdded { public Cell Cell; }
     public class PlayerLost { public string PlayerName; }
     public class GetTurn { public GameStates gameState; }
     public class NextTurn { public Team cellTeam; }

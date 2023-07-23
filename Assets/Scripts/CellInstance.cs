@@ -47,7 +47,7 @@ public class CellInstance : MonoBehaviour
     {
         _cell = new Cell(row, column);
         _cell.CellInstance = this;
-        EventAggregator.Post(this, new CellAdded { CellInstance = _cell });
+        EventAggregator.Post(this, new CellAdded { Cell = _cell });
         EventAggregator.Subscribe<GetTurn>(SetTurn);
         EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
         EventAggregator.Subscribe<AddBots>(AddBotsTeams);
