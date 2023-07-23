@@ -12,6 +12,7 @@ public class ImageCombiner : MonoBehaviour
     public Image _image;
     public void CombineImages(int numberOfDots, bool teamUp, bool teamRight, bool teamBottom, bool teamLeft)
     {
+        if(numberOfDots == 0) { return; }
         Texture2D sourceImage = _sourceImages[numberOfDots - 1];
 
         List<Texture2D> images = new List<Texture2D> { sourceImage };
@@ -32,7 +33,7 @@ public class ImageCombiner : MonoBehaviour
             pixelColors[i] = images[i].GetPixels();
         }
 
-        Parallel.For(0, combinedHeight, y =>
+        for (int y = 0; y < combinedHeight; y++)
         {
             for (int x = 0; x < combinedWidth; x++)
             {
@@ -48,17 +49,19 @@ public class ImageCombiner : MonoBehaviour
                 }
                 combinedPixels[x + y * combinedWidth] = pixelColor;
             }
-        });
+        }
 
         Texture2D combinedImage = new Texture2D(combinedWidth, combinedHeight);
         combinedImage.SetPixels(combinedPixels);
         combinedImage.Apply();
 
-        _image.sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero, 512, 2);
+        if (_image.sprite != null) // unload unused sprites
+        {
+            Resources.UnloadUnusedAssets();
+        }
+
+        _image.sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero);
     }
-
-
-
 
     public void ClearImage(Texture2D sourceImage)
     {

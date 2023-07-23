@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using UnityEngine;
 using EventHandler;
 using UnityEngine.UI;
@@ -9,205 +9,235 @@ public enum Team { None, Team1, Team2, Team3, Team4 }
 
 public class CellInstance : MonoBehaviour
 {
-    [SerializeField] private ImageCombiner _imageCombiner;
-    [SerializeField] private Image _image;
     [SerializeField] private Button _button;
+    [SerializeField] private ParticleSystem _particle;
+    public ImageCombiner ImageCombiner;
+    public Image Image;
+
+    private List<Team> _teams;
+
     private Cell _cell;
-    private bool _teamTurn;
+    public bool TeamTurn;
 
-    Dictionary<Team, GameStates> TeamDictionary = new Dictionary<Team, GameStates>()
-{
-    { Team.Team1, GameStates.PLAYER1TURN },
-    { Team.Team2, GameStates.PLAYER2TURN },
-    { Team.Team3, GameStates.PLAYER3TURN },
-    { Team.Team4, GameStates.PLAYER4TURN }
-};
-
-
-    public class Cell
+    readonly Dictionary<Team, GameStates> TeamDictionary = new()
     {
-        public event Action DotAdded;
-        public event Action TeamColorChanged;
-        public event Action UpdatedImage;
-        private int _posRow;
-        private int _posColumn;
-        private int _numberOfDots;
-        private Color _teamColor = Color.white;
-        private Material _material;
-        private (Cell, Cell, Cell, Cell) _neighbours;
-        private Team _team;
-
-        public int PosRow
-        {
-            get { return _posRow; }
-            set { _posRow = value; }
-        }
-        public int PosColumn
-        {
-            get { return _posColumn; }
-            set { _posColumn = value; }
-        }
-        public Team CellTeam
-        {
-            get { return _team; }
-            set { _team = value; }
-        }
-        public int NumberOfDots
-        {
-            get { return _numberOfDots; }
-        }
-        public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
-        {
-            get { return _neighbours; }
-            set { _neighbours = value; }
-        }
-        public Color TeamColor
-        {
-            get { return _teamColor; }
-        }
-        public Material Material
-        {
-            get { return _material; }
-        }
-        public Cell(int posX, int posY)
-        {
-            _posRow = posX;
-            _posColumn = posY;
-        }
-
-        public void AddDot()
-        {
-            _numberOfDots++;
-            DotAdded.Invoke();
-        }
-        public void SetTeam(Color teamColor, Material material, Team team)
-        {
-            _team = team;
-            _teamColor = teamColor;
-            _material = material;
-            _material.color = _teamColor != null ? _teamColor : _material.color;
-            TeamColorChanged.Invoke();
-        }
-        public void ClearCell()
-        {
-            _team = Team.None;
-            _teamColor = Color.white;
-            _material = null;
-            _numberOfDots = 0;
-        }
-        public void UpdateImage()
-        {
-            UpdatedImage.Invoke();
-        }
-    }
+        { Team.Team1, GameStates.PLAYER1TURN },
+        { Team.Team2, GameStates.PLAYER2TURN },
+        { Team.Team3, GameStates.PLAYER3TURN },
+        { Team.Team4, GameStates.PLAYER4TURN }
+    };
 
     private void Start()
     {
         _button.onClick.AddListener(OnClick);
     }
+
+    private void OnDestroy()
+    {
+        _button.onClick.RemoveAllListeners();
+        EventAggregator.Unsubscribe<GetTurn>(SetTurn);
+        EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
+        EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
+        if (_cell != null && _cell.Material != null)
+        {
+            _cell.Material.SetInt("_IsGlowing", 0);
+        }
+    }
     public void CreateCellInstance(int row, int column)
     {
         _cell = new Cell(row, column);
-        _cell.DotAdded += DotAdded;
-        _cell.TeamColorChanged += TeamChanged;
-        _cell.UpdatedImage += UpdateImage;
+        _cell.CellInstance = this;
         EventAggregator.Post(this, new CellAdded { CellInstance = _cell });
         EventAggregator.Subscribe<GetTurn>(SetTurn);
+        EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
+        EventAggregator.Subscribe<AddBots>(AddBotsTeams);
+    }
+
+    private void AddBotsTeams(object arg1, AddBots data)
+    {
+        _teams = data.teams;
+    }
+
+    private void PrepareTurn(object arg1, PrepareForNextTurn team)
+    {
+        if (team.cellTeam == _cell.CellTeam)
+        {
+            TeamTurn = false;
+            _cell.Material.SetInt("_IsGlowing", 0);
+        }
     }
 
     private void SetTurn(object arg1, GetTurn turn)
     {
         if(_cell.CellTeam != Team.None)
         {
-            if (turn.gameState == TeamDictionary[_cell.CellTeam])
+            var reversed = TeamDictionary.ToDictionary(x => x.Value, x => x.Key);
+            if (turn.gameState == TeamDictionary[_cell.CellTeam] && !_teams.Contains(reversed[turn.gameState]))
             {
-                StartCoroutine(SetTurn());
-            }
-            else
-            {
-                _teamTurn = false;
+                _cell.Material.SetInt("_IsGlowing", 1);
+                _cell.Material.SetFloat("_Current_Time", Time.time);
+                TeamTurn = true;
             }
         }
     }
 
     private void OnClick()
     {
-        if (_cell.TeamColor != Color.white && _teamTurn)
+        if (_cell.TeamColor != Color.white && TeamTurn)
         {
-            if(_cell.NumberOfDots != 3)
-            {
-                EventAggregator.Post(this, new NextTurn { cellTeam = _cell.CellTeam });
-            }
-            _cell.AddDot();
+            TeamTurn = false;
             _cell.Material.SetInt("_IsGlowing", 0);
+            EventAggregator.Post(this, new PrepareForNextTurn { cellTeam = _cell.CellTeam });
+            if(_cell.NumberOfDots != 3) { StartCoroutine(NextTurnDelay()); }
+            _cell.AddDot();
         }
     }
 
-    private IEnumerator SetTurn()
+    private IEnumerator NextTurnDelay()
     {
-        yield return new WaitForSeconds(0.3f);
-        _cell.Material.SetInt("_IsGlowing", 1);
-        _cell.Material.SetFloat("_Current_Time", Time.time);
-        _teamTurn = true;
+        yield return new WaitForSeconds(Constants.SpeedOfGame);
+        EventAggregator.Post(this, new NextTurn { cellTeam = _cell.CellTeam });
     }
 
-    private void DotAdded()
+    public IEnumerator AddCells()
     {
-        if (_cell.NumberOfDots >= 4)
+        yield return new WaitForSeconds(Constants.SpeedOfGame);
+        if(_cell.TeamColor != Color.white)
+        {
+            StartCoroutine(Animation());
+            EventAggregator.Post(this, new AddToNearbyCells { cell = _cell });
+        }
+    }
+
+    public IEnumerator SpreadAnimation()
+    {
+        yield return new WaitForSeconds(Constants.SpeedOfGame);
+        if(_cell.TeamColor != Color.white)
+        {
+            StartCoroutine(Animation());
+        }
+    }
+
+    private IEnumerator Animation()
+    {
+        ParticleSystem particle = Instantiate(_particle, gameObject.transform.position, gameObject.transform.rotation, gameObject.transform);
+        var particleMain = particle.main;
+        particleMain.startColor = _cell.TeamColor;
+        Destroy(particle.gameObject, 3f);
+        yield return null;
+    }
+}
+public class Cell
+{
+    public CellInstance CellInstance;
+    private readonly int _posRow;
+    private readonly int _posColumn;
+    private int _numberOfDots;
+    private Color _teamColor = Color.white;
+    private Material _material;
+    private (Cell, Cell, Cell, Cell) _neighbours;
+    private Team _team;
+
+    public int PosRow
+    {
+        get { return _posRow; }
+    }
+    public int PosColumn
+    {
+        get { return _posColumn; }
+    }
+    public Team CellTeam
+    {
+        get { return _team; }
+        set { _team = value; }
+    }
+    public int NumberOfDots
+    {
+        get { return _numberOfDots; }
+        set { _numberOfDots = value; }
+    }
+    public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
+    {
+        get { return _neighbours; }
+        set { _neighbours = value; }
+    }
+    public Color TeamColor
+    {
+        get { return _teamColor; }
+    }
+    public Material Material
+    {
+        get { return _material; }
+    }
+    public Cell(int posX, int posY)
+    {
+        _posRow = posX;
+        _posColumn = posY;
+    }
+
+    public void AddDot()
+    {
+        _numberOfDots++;
+        if (_numberOfDots >= 4)
         {
             UpdateImage();
-            StartCoroutine(AddCells());
+            CellInstance.StartCoroutine(CellInstance.AddCells());
         }
         else
         {
             UpdateImage();
         }
+        CellInstance.TeamTurn = false;
     }
-
+    public void SetTeam(Color teamColor, Material material, Team team)
+    {
+        _team = team;
+        _teamColor = teamColor;
+        _material = material;
+        if (teamColor != null && _material != null)
+        {
+            _material.color = teamColor;
+        }
+        CellInstance.Image.material = _material;
+    }
+    public void ClearCell()
+    {
+        _team = Team.None;
+        _teamColor = Color.white;
+        _numberOfDots = 0;
+        CellInstance.ImageCombiner.ClearImage((Texture2D)CellInstance.Image.mainTexture);
+    }
     public void UpdateImage()
     {
-        if (_cell.NumberOfDots != 0)
+        if (_numberOfDots != 0 && _team != Team.None)
         {
-            _imageCombiner.CombineImages(_cell.NumberOfDots,
-                                     _cell.Neighbours.top?.CellTeam == _cell.CellTeam,
-                                     _cell.Neighbours.right?.CellTeam == _cell.CellTeam,
-                                     _cell.Neighbours.bottom?.CellTeam == _cell.CellTeam,
-                                     _cell.Neighbours.left?.CellTeam == _cell.CellTeam);
+            CellInstance.ImageCombiner.CombineImages(_numberOfDots,
+                                     _neighbours.Item1?.CellTeam == _team,
+                                     Neighbours.right?.CellTeam == _team,
+                                     Neighbours.bottom?.CellTeam == _team,
+                                     Neighbours.left?.CellTeam == _team);
         }
     }
 
-    private void TeamChanged()
+    public bool NeighboursHasLessThan3Dots()
     {
-        _image.material = _cell.Material;
+        return (Neighbours.top?.NumberOfDots < 3 ||
+                Neighbours.bottom?.NumberOfDots < 3 ||
+                Neighbours.right?.NumberOfDots < 3 ||
+                Neighbours.left?.NumberOfDots < 3);
     }
 
-    public bool CheckForThreeInNeighbours()
+    public bool HasAdjacentCellWith3Dots(Cell targetCell)
     {
-        if (_cell.Neighbours.top?.NumberOfDots == 3 ||
-            _cell.Neighbours.bottom?.NumberOfDots == 3 ||
-            _cell.Neighbours.right?.NumberOfDots == 3 ||
-            _cell.Neighbours.left?.NumberOfDots == 3)
-        {
-            return true;
-        }
-        return false;
+        return (Neighbours.top == targetCell && Neighbours.top?.NumberOfDots == 3) ||
+               (Neighbours.bottom == targetCell && Neighbours.bottom?.NumberOfDots == 3) ||
+               (Neighbours.right == targetCell && Neighbours.right?.NumberOfDots == 3) ||
+               (Neighbours.left == targetCell && Neighbours.left?.NumberOfDots == 3);
     }
 
-    IEnumerator AddCells()
+    public float GetDistanceToOpponent(List<Cell> opponentCells)
     {
-        yield return new WaitForSeconds(0.2f);
-
-        Team cellTeam = _cell.CellTeam;
-        int cellPosColumn = _cell.PosColumn;
-        int cellPosRow = _cell.PosRow;
-        Color cellTeamColor = _cell.TeamColor;
-        Material cellMat = _cell.Material;
-
-        _cell.ClearCell();
-
-        yield return new WaitForSeconds(0.2f);
-
-        EventAggregator.Post(this, new AddToNearbyCells { posColumn = cellPosColumn, posRow = cellPosRow, teamColor = cellTeamColor, material = cellMat, team = cellTeam, neighbours = _cell.Neighbours });
-        _imageCombiner.ClearImage((Texture2D)_image.mainTexture);
+        return opponentCells.Min(opponentCell => Vector2.Distance(new Vector2(PosColumn, PosRow), new Vector2(opponentCell.PosColumn, opponentCell.PosRow)));
     }
+
 }

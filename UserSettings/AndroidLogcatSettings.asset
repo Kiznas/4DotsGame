@@ -1,0 +1,121 @@
+{
+    "m_SelectedDeviceId": "4f417836",
+    "m_SelectedPackage": {
+        "deviceId": "4f417836",
+        "name": "com.KlymAndCompany.Dots4",
+        "processId": 25017,
+        "exited": false
+    },
+    "m_SelectedPriority": 0,
+    "m_KnownPackagesForSerialization": [
+        {
+            "deviceId": "4f417836",
+            "name": "com.android.settings",
+            "processId": 9346,
+            "exited": false
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 11451,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 12813,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "org.telegram.messenger",
+            "processId": 10738,
+            "exited": false
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 23224,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 28092,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 25017,
+            "exited": false
+        }
+    ],
+    "m_Tags": {
+        "m_Entries": [
+            {
+                "m_Name": "Filter by all listed tags",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "No Filter",
+                "m_Selected": true
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Tag Control...",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "Unity",
+                "m_Selected": false
+            },
+            {
+                "m_Name": "CRASH",
+                "m_Selected": false
+            }
+        ]
+    },
+    "m_MemoryViewerState": {
+        "MemoryWindowHeight": 255.0,
+        "MemoryWindowWidth": 170.0,
+        "MemoryTypeEnabled": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true,
+            true
+        ],
+        "MemoryGroup": 1,
+        "Behavior": 2
+    },
+    "m_FilterOptions": {
+        "m_Filter": "",
+        "m_UseRegularExpressions": true,
+        "m_MatchCase": true
+    },
+    "m_SymbolPaths": [],
+    "m_CaptureVideoSettings": {
+        "TimeLimitEnabled": false,
+        "TimeLimit": 180,
+        "VideoSizeEnabled": false,
+        "VideoSizeX": 1280,
+        "VideoSizeY": 720,
+        "BitRateEnabled": false,
+        "BitRateK": 20000,
+        "DisplayIdEnabled": false,
+        "DisplayId": ""
+    }
+}

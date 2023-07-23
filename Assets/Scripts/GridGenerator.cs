@@ -13,7 +13,7 @@ public class GridGenerator : MonoBehaviour
 
     public void GenerateGrid()
     {
-        _gridSize = _gameManager.GridSize;
+        _gridSize = _gameManager.gridSize;
 
         ClearGrid();
 

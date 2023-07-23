@@ -1,85 +1,143 @@
 using EventHandler;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManagerScript : MonoBehaviour
 {
     [Header("Grid Size & Player Num")]
-    [Range(5, 9)]
-    [SerializeField] public int GridSize; 
-    [Range(2, 4)]
-    [SerializeField] public int NumberOfPlayers;
+    [Range(5, 9)] public int gridSize;
+    [Range(2, 4)] public int numberOfPlayers;
 
     [Header("Essentials")]
     [SerializeField] private GridGenerator _gridGenerator;
     [SerializeField] private Colorizer _colorizer;
 
     [Header("Materials")]
-    [SerializeField] private Material _1PlayerMaterial;
-    [SerializeField] private Material _2PlayerMaterial;
-    [SerializeField] private Material _3PlayerMaterial;
-    [SerializeField] private Material _4PlayerMaterial;
+    public Material[] PlayerMaterials = new Material[4];
 
-    [Header("Materials")]
-    [SerializeField] private Color _1PlayerColor;
-    [SerializeField] private Color _2PlayerColor;
-    [SerializeField] private Color _3PlayerColor;
-    [SerializeField] private Color _4PlayerColor;
+    [Header("Colors")]
+    public Color[] PlayerColors = new Color[4];
 
-    [Header("Buttons")]
+    [Header("Buttons/Sliders")]
     [SerializeField] private Button _initializeButton;
+    [SerializeField] private Button _restart;
+    [SerializeField] private Slider _playersNumberSlider;
+    [SerializeField] private Slider _gridSizeSlider;
 
-    private CellInstance.Cell[] _cells;
+    [SerializeField] private Toggle _performanceMod;
+
+    [Header("Background")]
+    [SerializeField] private GameObject _background;
+
+    public Cell[] Cells;
+    private Queue<Cell> cellQueue;
+    private HashSet<Team> previouslyAliveTeams = new();
 
     private int _cellIndex;
+
+    private bool IsProceeding;
+
     private void Start()
     {
         _initializeButton.onClick.AddListener(InitializeComponents);
+        _playersNumberSlider.onValueChanged.AddListener(ChangePlayerNumber);
+        _gridSizeSlider.onValueChanged.AddListener(ChangeGridSize);
+        _restart.onClick.AddListener(RestartGame);
+        Application.targetFrameRate = 60;
     }
 
-    [ContextMenu("Intialize Components")]
+    private void OnDestroy()
+    {
+        _initializeButton.onClick.RemoveAllListeners();
+        _playersNumberSlider.onValueChanged.RemoveAllListeners();
+        _gridSizeSlider.onValueChanged.RemoveAllListeners();
+        _restart.onClick.RemoveAllListeners();
+        EventAggregator.Unsubscribe<CellAdded>(AddCellToArray);
+        EventAggregator.Unsubscribe<AddToNearbyCells>(AddToNearbyCells);
+    }
+
+    private void RestartGame()
+    {
+        SceneManager.LoadScene(0);
+        Time.timeScale = 1.0f;
+    }
+
+    private void ChangeGridSize(float arg0)
+    {
+        gridSize = (int)arg0;
+    }
+
+    private void ChangePlayerNumber(float arg0)
+    {
+        numberOfPlayers = (int)arg0;
+    }
+
     private void InitializeComponents()
     {
-        _cells = new CellInstance.Cell[GridSize * GridSize];
+        Cells = new Cell[gridSize * gridSize];
         EventAggregator.Subscribe<CellAdded>(AddCellToArray);
         EventAggregator.Subscribe<AddToNearbyCells>(AddToNearbyCells);
+        EventAggregator.Post(this, new Initialization { });
+
+        cellQueue = new Queue<Cell>();
 
         _gridGenerator.GenerateGrid();
-
         AddCells();
+        _background.SetActive(true);
+        _gridSizeSlider.gameObject.SetActive(false);
+        _initializeButton.gameObject.SetActive(false);
+        _playersNumberSlider.gameObject.SetActive(false);
     }
 
     private void AddCellToArray(object arg1, CellAdded _cell)
     {
-        _cells[_cellIndex++] = _cell.CellInstance;
+        Cells[_cellIndex++] = _cell.CellInstance;
     }
 
     private void AddCells()
     {
-        foreach (var cell in _cells)
+        foreach (var cell in Cells)
         {
             AddNeighbours(cell);
         }
 
-        if (NumberOfPlayers >= 2)
+        for (int i = 0; i < numberOfPlayers; i++)
         {
-            AddDotsToCells(1, 1, _1PlayerColor, _1PlayerMaterial, Team.Team1);
-            AddDotsToCells(GridSize - 2, GridSize - 2, _2PlayerColor, _2PlayerMaterial, Team.Team2);
-            if (NumberOfPlayers >= 3)
+            int posX, posY;
+            switch (i)
             {
-                AddDotsToCells(1, GridSize - 2, _3PlayerColor, _3PlayerMaterial, Team.Team3);
-                if (NumberOfPlayers >= 4)
-                {
-                    AddDotsToCells(GridSize - 2, 1, _4PlayerColor, _4PlayerMaterial, Team.Team4);
-                }
+                case 0:
+                    posX = 1;
+                    posY = 1;
+                    break;
+                case 1:
+                    posX = gridSize - 2;
+                    posY = gridSize - 2;
+                    break;
+                case 2:
+                    posX = 1;
+                    posY = gridSize - 2;
+                    break;
+                case 3:
+                    posX = gridSize - 2;
+                    posY = 1;
+                    break;
+                default:
+                    posX = posY = 1;
+                    break;
             }
+            AddDotsToCells(posX, posY, PlayerColors[i], PlayerMaterials[i], (Team)i + 1);
         }
     }
 
-    private CellInstance.Cell GetCellAtPos(int posColumn, int posRow)
+    private Cell GetCellAtPos(int posColumn, int posRow)
     {
-        foreach (var cell in _cells)
+        foreach (var cell in Cells)
         {
             if (cell.PosColumn == posColumn && cell.PosRow == posRow)
             {
@@ -91,95 +149,116 @@ public class GameManagerScript : MonoBehaviour
 
     private void AddDotsToCells(int posColumn, int posRow, Color teamColor, Material material, Team team)
     {
-        CellInstance.Cell cell = GetCellAtPos(posColumn, posRow);
+        Cell cell = GetCellAtPos(posColumn, posRow);
         cell.SetTeam(teamColor, material, team);
         cell.AddDot();
         cell.AddDot();
         cell.AddDot();
     }
 
-    private void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
+    private async void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
     {
-        bool setNextTurn = true;
-        List<CellInstance.Cell> cells = new List<CellInstance.Cell>
+        if (cellData != null)
         {
-            cellData.neighbours.Item1,
-            cellData.neighbours.Item2,
-            cellData.neighbours.Item3,
-            cellData.neighbours.Item4
-        };
-        foreach (var cell in cells)
+            Cell cell = cellData.cell;
+            cellQueue.Enqueue(cell);
+        }
+
+        if(IsProceeding == false)
         {
-            if(cell != null)
+            IsProceeding = true;
+            await ProcessQueue(cellData.cell.CellTeam);
+        }
+    }
+
+    private async Task ProcessQueue(Team team)
+    {
+        while (cellQueue.Count > 0)
+        {
+            List<Cell> cellsWaves = new();
+            while (cellQueue.Count > 0)
             {
-                if(cell?.NumberOfDots == 3)
+                var cellData = cellQueue.Dequeue();
+                cellsWaves.Add(cellData);
+            }
+            foreach (var cellData in cellsWaves)
+            {
+                ProcessCell(cellData);
+            }
+            if (!_performanceMod.isOn)
+            {
+                foreach (var cell in Cells)
                 {
-                    setNextTurn = false;
+                    cell.UpdateImage();
                 }
-                if (cell?.NumberOfDots == 0)
+            }
+            await Task.Delay(TimeSpan.FromSeconds(Constants.SpeedOfGame));
+        }
+            
+        var aliveTeams = new HashSet<Team>(Cells.Select(cell => cell.CellTeam));
+        foreach (var lostTeam in previouslyAliveTeams.Except(aliveTeams))
+        {
+            var playerName = "PLAYER" + (int)lostTeam;
+            EventAggregator.Post(this, new PlayerLost { PlayerName = playerName });
+        }
+
+        previouslyAliveTeams = aliveTeams;
+        IsProceeding = false;
+
+        if (_performanceMod.isOn)
+        {
+            foreach (var cell in Cells)
+            {
+                cell.UpdateImage();
+            }
+        }
+
+        EventAggregator.Post(this, new NextTurn { cellTeam = team });
+    }
+
+    private void ProcessCell(Cell cell)
+    {
+        List<Cell> cells = new()
+        {
+            cell.Neighbours.top,
+            cell.Neighbours.right,
+            cell.Neighbours.bottom,
+            cell.Neighbours.left
+        };
+
+        foreach (var item in cells)
+        {
+            if (item != null && cell.TeamColor != Color.white)
+            {
+                if(item.NumberOfDots == 3)
                 {
-                    cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
-                    cell.AddDot();
-                }
-                else if (cell?.CellTeam == cellData.team)
-                {
-                    cell.AddDot();
+                    item.SetTeam(cell.TeamColor, cell.Material, cell.CellTeam);
+                    item.NumberOfDots++;
+                    item.UpdateImage();
+                    cellQueue.Enqueue(item);
+                    StartCoroutine(item.CellInstance.SpreadAnimation());
                 }
                 else
                 {
-                    cell.SetTeam(cellData.teamColor, cellData.material, cellData.team);
-                    cell.AddDot();
+                    item.SetTeam(cell.TeamColor, cell.Material, cell.CellTeam);
+                    item.AddDot();
                 }
             }
         }
-
-        var aliveTeams = new HashSet<Team>();
-
-        foreach (var cell in _cells)
-        {
-            cell.UpdateImage();
-            aliveTeams.Add(cell.CellTeam);
-        }
-
-        for (int i = 1; i <= 4; i++)
-        {
-            var playerName = "PLAYER" + i;
-            if (!aliveTeams.Contains((Team)i))
-            {
-                EventAggregator.Post(this, new PlayerLost { PlayerName = playerName });
-            }
-        }
-
-        if (setNextTurn)
-        {
-            EventAggregator.Post(this, new NextTurn { cellTeam = cellData.team });
-        }
+        cell.ClearCell();
     }
 
-    private void AddNeighbours(CellInstance.Cell cell)
+    private void AddNeighbours(Cell cell)
     {
-        (int posX, int posY) topPos = (cell.PosColumn, cell.PosRow - 1);
-        (int posX, int posY) rightPos = (cell.PosColumn + 1, cell.PosRow);
-        (int posX, int posY) bottomPos = (cell.PosColumn, cell.PosRow + 1);
-        (int posX, int posY) leftPos = (cell.PosColumn - 1, cell.PosRow);
-        foreach (var neighbourCell in _cells)
-        {
-            if (neighbourCell.PosColumn == topPos.posX && neighbourCell.PosRow == topPos.posY)
-            {
-                cell.Neighbours = (neighbourCell, cell.Neighbours.right, cell.Neighbours.bottom, cell.Neighbours.left);
-            }
-            if (neighbourCell.PosColumn == rightPos.posX && neighbourCell.PosRow == rightPos.posY)
-            {
-                cell.Neighbours = (cell.Neighbours.top, neighbourCell, cell.Neighbours.bottom, cell.Neighbours.left);
-            }
-            if (neighbourCell.PosColumn == bottomPos.posX && neighbourCell.PosRow == bottomPos.posY)
-            {
-                cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, neighbourCell, cell.Neighbours.left);
-            }
-            if (neighbourCell.PosColumn == leftPos.posX && neighbourCell.PosRow == leftPos.posY)
-            {
-                cell.Neighbours = (cell.Neighbours.top, cell.Neighbours.right, cell.Neighbours.bottom, neighbourCell);
-            }
-        }
+        int posX = cell.PosColumn;
+        int posY = cell.PosRow;
+
+        cell.Neighbours = (
+            GetCellAtPos(posX, posY - 1),
+            GetCellAtPos(posX + 1, posY),
+            GetCellAtPos(posX, posY + 1),
+            GetCellAtPos(posX - 1, posY)
+        );
     }
 }
+

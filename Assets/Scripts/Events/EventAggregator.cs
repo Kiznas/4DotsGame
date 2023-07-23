@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EventHandler
@@ -31,16 +32,13 @@ namespace EventHandler
     }
 
     //EVENTS//
-    public class CellAdded { public CellInstance.Cell CellInstance; }
+    public class CellAdded { public Cell CellInstance; }
     public class PlayerLost { public string PlayerName; }
     public class GetTurn { public GameStates gameState; }
     public class NextTurn { public Team cellTeam; }
-    public class AddToNearbyCells 
-    { 
-        public int posColumn, posRow;
-        public Color teamColor;
-        public Material material;
-        public Team team;
-        public (CellInstance.Cell, CellInstance.Cell, CellInstance.Cell, CellInstance.Cell) neighbours; 
-    }
+    public class Initialization { };
+    public class PrepareForNextTurn { public Team cellTeam; }
+    public class UpdateImages { };
+    public class AddToNearbyCells { public Cell cell; }
+    public class AddBots { public List<Team> teams; }
 }
