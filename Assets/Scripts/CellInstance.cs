@@ -212,13 +212,12 @@ public class Cell
         if (_numberOfDots != 0 && _team != Team.None)
         {
             CellInstance.ImageCombiner.CombineImages(_numberOfDots,
-                                     _neighbours.Item1?.CellTeam == _team,
+                                     Neighbours.top?.CellTeam == _team,
                                      Neighbours.right?.CellTeam == _team,
                                      Neighbours.bottom?.CellTeam == _team,
                                      Neighbours.left?.CellTeam == _team);
         }
     }
-
     public bool NeighboursHasLessThan3Dots()
     {
         return (Neighbours.top?.NumberOfDots < 3 ||
@@ -226,7 +225,6 @@ public class Cell
                 Neighbours.right?.NumberOfDots < 3 ||
                 Neighbours.left?.NumberOfDots < 3);
     }
-
     public bool HasAdjacentCellWith3Dots(Cell targetCell)
     {
         return (Neighbours.top == targetCell && Neighbours.top?.NumberOfDots == 3) ||
@@ -234,7 +232,6 @@ public class Cell
                (Neighbours.right == targetCell && Neighbours.right?.NumberOfDots == 3) ||
                (Neighbours.left == targetCell && Neighbours.left?.NumberOfDots == 3);
     }
-
     public float GetDistanceToOpponent(List<Cell> opponentCells)
     {
         return opponentCells.Min(opponentCell => Vector2.Distance(new Vector2(PosColumn, PosRow), new Vector2(opponentCell.PosColumn, opponentCell.PosRow)));

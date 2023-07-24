@@ -1,18 +1,22 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
-using UnityEngine.Windows;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class ImageCombiner : MonoBehaviour
 {
     public Texture2D[] _sourceImages;
     public Image _image;
-    public void CombineImages(int numberOfDots, bool teamUp, bool teamRight, bool teamBottom, bool teamLeft)
+
+    public async void CombineImages(int numberOfDots, bool teamUp, bool teamRight, bool teamBottom, bool teamLeft)
     {
-        if(numberOfDots == 0) { return; }
+        await CombineImagesAsync(numberOfDots, teamUp, teamRight, teamBottom, teamLeft);
+    }
+
+    private async Task CombineImagesAsync(int numberOfDots, bool teamUp, bool teamRight, bool teamBottom, bool teamLeft)
+    {
+        if (numberOfDots == 0) { return; }
         Texture2D sourceImage = _sourceImages[numberOfDots - 1];
 
         List<Texture2D> images = new List<Texture2D> { sourceImage };
@@ -25,12 +29,12 @@ public class ImageCombiner : MonoBehaviour
         int combinedWidth = sourceImage.width;
         int combinedHeight = sourceImage.height;
 
-        Color[] combinedPixels = new Color[combinedWidth * combinedHeight];
+        Color32[] combinedPixels = new Color32[combinedWidth * combinedHeight];
 
-        Color[][] pixelColors = new Color[images.Count][];
+        Color32[][] pixelColors = new Color32[images.Count][];
         for (int i = 0; i < images.Count; i++)
         {
-            pixelColors[i] = images[i].GetPixels();
+            pixelColors[i] = images[i].GetPixels32();
         }
 
         for (int y = 0; y < combinedHeight; y++)
@@ -52,16 +56,19 @@ public class ImageCombiner : MonoBehaviour
         }
 
         Texture2D combinedImage = new Texture2D(combinedWidth, combinedHeight);
-        combinedImage.SetPixels(combinedPixels);
+        combinedImage.SetPixels32(combinedPixels);
         combinedImage.Apply();
 
-        if (_image.sprite != null) // unload unused sprites
+        if (_image.sprite != null) 
         {
             Resources.UnloadUnusedAssets();
         }
 
-        _image.sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero);
+        Sprite sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero);
+        _image.sprite = sprite;
+        await Task.Delay(1);
     }
+
 
     public void ClearImage(Texture2D sourceImage)
     {

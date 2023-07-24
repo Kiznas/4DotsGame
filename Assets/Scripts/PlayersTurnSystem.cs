@@ -85,7 +85,7 @@ public class PlayersTurnSystem : MonoBehaviour
         Debug.Log(GameState.ToString());
         EventAggregator.Subscribe<NextTurn>(ChangeTurn);
         EventAggregator.Subscribe<PlayerLost>(PLost);
-        List<Team> teams = new List<Team>();
+        List<Team> teams = new();
         for (int i = 0; i < _gameManager.numberOfPlayers; i++)
         {
             if (toggles[_players[i]].isOn)
