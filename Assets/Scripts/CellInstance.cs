@@ -3,9 +3,8 @@ using UnityEngine;
 using EventHandler;
 using UnityEngine.UI;
 using System.Collections;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-
-public enum Team { None, Team1, Team2, Team3, Team4 }
 
 public class CellInstance : MonoBehaviour
 {
@@ -14,18 +13,10 @@ public class CellInstance : MonoBehaviour
     public ImageCombiner ImageCombiner;
     public Image Image;
 
-    private List<Team> _teams;
+    private List<Team> _botTeams;
 
     private Cell _cell;
     public bool TeamTurn;
-
-    readonly Dictionary<Team, GameStates> TeamDictionary = new()
-    {
-        { Team.Team1, GameStates.PLAYER1TURN },
-        { Team.Team2, GameStates.PLAYER2TURN },
-        { Team.Team3, GameStates.PLAYER3TURN },
-        { Team.Team4, GameStates.PLAYER4TURN }
-    };
 
     private void Start()
     {
@@ -45,8 +36,7 @@ public class CellInstance : MonoBehaviour
     }
     public void CreateCellInstance(int row, int column)
     {
-        _cell = new Cell(row, column);
-        _cell.CellInstance = this;
+        _cell = new Cell(row, column, this);
         EventAggregator.Post(this, new CellAdded { Cell = _cell });
         EventAggregator.Subscribe<GetTurn>(SetTurn);
         EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
@@ -55,7 +45,7 @@ public class CellInstance : MonoBehaviour
 
     private void AddBotsTeams(object arg1, AddBots data)
     {
-        _teams = data.teams;
+        _botTeams = data.teams;
     }
 
     private void PrepareTurn(object arg1, PrepareForNextTurn team)
@@ -71,8 +61,8 @@ public class CellInstance : MonoBehaviour
     {
         if(_cell.CellTeam != Team.None)
         {
-            var reversed = TeamDictionary.ToDictionary(x => x.Value, x => x.Key);
-            if (turn.gameState == TeamDictionary[_cell.CellTeam] && !_teams.Contains(reversed[turn.gameState]))
+            var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
+            if (turn.gameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.gameState]))
             {
                 _cell.Material.SetInt("_IsGlowing", 1);
                 _cell.Material.SetFloat("_Current_Time", Time.time);
@@ -85,51 +75,42 @@ public class CellInstance : MonoBehaviour
     {
         if (_cell.TeamColor != Color.white && TeamTurn)
         {
-            TeamTurn = false;
-            _cell.Material.SetInt("_IsGlowing", 0);
             EventAggregator.Post(this, new PrepareForNextTurn { cellTeam = _cell.CellTeam });
-            if(_cell.NumberOfDots != 3) { StartCoroutine(NextTurnDelay()); }
+            if(_cell.NumberOfDots != 3) { StartCoroutine(NextTurnWithDelay()); }
             _cell.AddDot();
         }
     }
 
-    private IEnumerator NextTurnDelay()
+    private IEnumerator NextTurnWithDelay()
     {
         yield return new WaitForSeconds(Constants.SpeedOfGame);
         EventAggregator.Post(this, new NextTurn { cellTeam = _cell.CellTeam });
     }
 
-    public IEnumerator AddCells()
+    public IEnumerator AddToNearby()
     {
         yield return new WaitForSeconds(Constants.SpeedOfGame);
-        if(_cell.TeamColor != Color.white)
-        {
-            StartCoroutine(Animation());
-            EventAggregator.Post(this, new AddToNearbyCells { cell = _cell });
-        }
+
+        StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
+        EventAggregator.Post(this, new AddToNearbyCells { cell = _cell });
     }
 
-    public IEnumerator SpreadAnimation()
+    public IEnumerator SpreadAnimation(bool withDelay, Color teamColor)
     {
-        yield return new WaitForSeconds(Constants.SpeedOfGame);
-        if(_cell.TeamColor != Color.white)
+        if(withDelay)
         {
-            StartCoroutine(Animation());
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
         }
-    }
-
-    private IEnumerator Animation()
-    {
         ParticleSystem particle = Instantiate(_particle, gameObject.transform.position, gameObject.transform.rotation, gameObject.transform);
         var particleMain = particle.main;
-        particleMain.startColor = _cell.TeamColor;
+        particleMain.startColor = teamColor;
         Destroy(particle.gameObject, 3f);
         yield return null;
     }
 }
 public class Cell
 {
-    public CellInstance CellInstance;
+    private CellInstance _cellInstance;
     private readonly int _posRow;
     private readonly int _posColumn;
     private int _numberOfDots;
@@ -138,41 +119,29 @@ public class Cell
     private (Cell, Cell, Cell, Cell) _neighbours;
     private Team _team;
 
-    public int PosRow
-    {
-        get { return _posRow; }
-    }
-    public int PosColumn
-    {
-        get { return _posColumn; }
-    }
-    public Team CellTeam
-    {
-        get { return _team; }
-        set { _team = value; }
-    }
+    public int PosRow{ get { return _posRow; } }
+    public int PosColumn { get { return _posColumn; } }
+    public Team CellTeam { get { return _team; } }
+    public Color TeamColor { get { return _teamColor; } }
+    public Material Material{ get { return _material; } }
+    public CellInstance CellInstance { get { return _cellInstance; } }
+
     public int NumberOfDots
     {
         get { return _numberOfDots; }
         set { _numberOfDots = value; }
     }
-    public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
+    public (Cell top, Cell right, Cell bottom, Cell left) Neighbours 
     {
         get { return _neighbours; }
         set { _neighbours = value; }
     }
-    public Color TeamColor
-    {
-        get { return _teamColor; }
-    }
-    public Material Material
-    {
-        get { return _material; }
-    }
-    public Cell(int posX, int posY)
+
+    public Cell(int posX, int posY, CellInstance cellInstance)
     {
         _posRow = posX;
         _posColumn = posY;
+        _cellInstance = cellInstance;
     }
 
     public void AddDot()
@@ -181,13 +150,12 @@ public class Cell
         if (_numberOfDots >= 4)
         {
             UpdateImage();
-            CellInstance.StartCoroutine(CellInstance.AddCells());
+            _cellInstance.StartCoroutine(_cellInstance.AddToNearby());
         }
         else
         {
             UpdateImage();
         }
-        CellInstance.TeamTurn = false;
     }
     public void SetTeam(Color teamColor, Material material, Team team)
     {
@@ -198,43 +166,35 @@ public class Cell
         {
             _material.color = teamColor;
         }
-        CellInstance.Image.material = _material;
+        _cellInstance.Image.material = _material;
     }
     public void ClearCell()
     {
         _team = Team.None;
         _teamColor = Color.white;
         _numberOfDots = 0;
-        CellInstance.ImageCombiner.ClearImage((Texture2D)CellInstance.Image.mainTexture);
+        _cellInstance.ImageCombiner.ClearImage((Texture2D)_cellInstance.Image.mainTexture);
     }
     public void UpdateImage()
     {
         if (_numberOfDots != 0 && _team != Team.None)
         {
-            CellInstance.ImageCombiner.CombineImages(_numberOfDots,
+            _cellInstance.ImageCombiner.CombineImages(_numberOfDots,
                                      Neighbours.top?.CellTeam == _team,
                                      Neighbours.right?.CellTeam == _team,
                                      Neighbours.bottom?.CellTeam == _team,
                                      Neighbours.left?.CellTeam == _team);
         }
     }
-    public bool NeighboursHasLessThan3Dots()
+    public async Task UpdateImageAsync()
     {
-        return (Neighbours.top?.NumberOfDots < 3 ||
-                Neighbours.bottom?.NumberOfDots < 3 ||
-                Neighbours.right?.NumberOfDots < 3 ||
-                Neighbours.left?.NumberOfDots < 3);
+        if (_numberOfDots != 0 && _team != Team.None)
+        {
+            await _cellInstance.ImageCombiner.CombineImagesAsync(_numberOfDots,
+                                     Neighbours.top?.CellTeam == _team,
+                                     Neighbours.right?.CellTeam == _team,
+                                     Neighbours.bottom?.CellTeam == _team,
+                                     Neighbours.left?.CellTeam == _team);
+        }
     }
-    public bool HasAdjacentCellWith3Dots(Cell targetCell)
-    {
-        return (Neighbours.top == targetCell && Neighbours.top?.NumberOfDots == 3) ||
-               (Neighbours.bottom == targetCell && Neighbours.bottom?.NumberOfDots == 3) ||
-               (Neighbours.right == targetCell && Neighbours.right?.NumberOfDots == 3) ||
-               (Neighbours.left == targetCell && Neighbours.left?.NumberOfDots == 3);
-    }
-    public float GetDistanceToOpponent(List<Cell> opponentCells)
-    {
-        return opponentCells.Min(opponentCell => Vector2.Distance(new Vector2(PosColumn, PosRow), new Vector2(opponentCell.PosColumn, opponentCell.PosRow)));
-    }
-
 }

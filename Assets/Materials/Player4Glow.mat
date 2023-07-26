@@ -80,7 +80,7 @@ Material:
     - _Blend: 0
     - _CastShadows: 1
     - _Cull: 2
-    - _Current_Time: 204.7283
+    - _Current_Time: 4.8924236
     - _DstBlend: 0
     - _EnableExternalAlpha: 0
     - _Intensity: 5
@@ -95,7 +95,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 0.5, g: 0, b: 1, a: 1}
+    - _Color: {r: 0.5019608, g: 1, b: 0, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

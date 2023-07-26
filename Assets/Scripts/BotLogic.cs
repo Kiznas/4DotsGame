@@ -1,24 +1,14 @@
-using EventHandler;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Unity.Burst.Intrinsics.X86.Avx;
+using EventHandler;
+using System.Collections;
+using System.Collections.Generic;
 
 public class BotLogic : MonoBehaviour
 {
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private PlayersTurnSystem _turnSysten;
     private List<Team> _botTeams = new List<Team>();
-
-    readonly Dictionary<Team, GameStates> TeamDictionary = new()
-    {
-        { Team.Team1, GameStates.PLAYER1TURN },
-        { Team.Team2, GameStates.PLAYER2TURN },
-        { Team.Team3, GameStates.PLAYER3TURN },
-        { Team.Team4, GameStates.PLAYER4TURN }
-    };
 
     private void Start()
     {
@@ -41,7 +31,7 @@ public class BotLogic : MonoBehaviour
     {
         foreach (Team botTeam in _botTeams)
         {
-            if (turnData.gameState == TeamDictionary[botTeam])
+            if (turnData.gameState == Constants.TeamsDictionary[botTeam])
             {
                 StartCoroutine(BotDelay(botTeam));
                 return; 
@@ -51,30 +41,28 @@ public class BotLogic : MonoBehaviour
 
     private IEnumerator BotDelay(Team team)
     {
-        yield return new WaitForSeconds(Constants.SpeedOfGame);
+        yield return new WaitForSeconds(Constants.SpeedOfGame/2);
         TakeBotTurn(team);
     }
 
     private void TakeBotTurn(Team botTeam)
     {
-        var opponentCells = _gameManager.Cells.Where(cell => cell.CellTeam != botTeam).ToList();
+        var opponentCells = _gameManager.Cells.Where(cell => cell.CellTeam != botTeam && cell.CellTeam != Team.None).ToList();
         var botCells = _gameManager.Cells.Where(cell => cell.CellTeam == botTeam).ToList();
 
         // Variant 1: Check if there is a bot cell with 3 dots and adjacent to an opponent cell with 3 dots
-        var botCellWith3DotsAndAdjacentToOpponentCellWith3Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 3);
+        var botCellWith3DotsAndAdjacentToOpponentCellWith3Dots = GetAdjacentCellWithNDots(botCells, opponentCells, 3);
         if (botCellWith3DotsAndAdjacentToOpponentCellWith3Dots != null)
         {
             ProcessBotCellTurn(botCellWith3DotsAndAdjacentToOpponentCellWith3Dots, botTeam);
-            botCellWith3DotsAndAdjacentToOpponentCellWith3Dots.AddDot();
             return;
         }
 
         // Variant 2: Check if there is a bot cell with 2 dots and adjacent to an opponent cell with 3 dots
-        var botCellWith2DotsAndAdjacentToOpponentCellWith3Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 2);
+        var botCellWith2DotsAndAdjacentToOpponentCellWith3Dots = GetAdjacentCellWithNDots(botCells, opponentCells, 2);
         if (botCellWith2DotsAndAdjacentToOpponentCellWith3Dots != null)
         {
             ProcessBotCellTurn(botCellWith2DotsAndAdjacentToOpponentCellWith3Dots, botTeam);
-            botCellWith2DotsAndAdjacentToOpponentCellWith3Dots.AddDot();
             return;
         }
 
@@ -82,21 +70,20 @@ public class BotLogic : MonoBehaviour
         var opponentCellWith3Dots = opponentCells.FirstOrDefault(cell => cell.NumberOfDots == 3);
         if (opponentCellWith3Dots != null)
         {
-            var botCellToAttack = botCells.FirstOrDefault(cell => cell.HasAdjacentCellWith3Dots(opponentCellWith3Dots));
+            var botCellToAttack = botCells.FirstOrDefault(botCell => HasAdjacentCellWithNDots(botCell, opponentCellWith3Dots, 1));
+            botCellToAttack ??= botCells.FirstOrDefault(botCell => HasAdjacentCellWithNDots(botCell, opponentCellWith3Dots, 2));
             if (botCellToAttack != null)
             {
                 ProcessBotCellTurn(botCellToAttack, botTeam);
-                botCellToAttack.AddDot();
                 return;
             }
         }
 
         // Variant 4: Check if there is a bot cell with 2 dots and adjacent to an opponent cell with 2 dots
-        var botCellWith2DotsAndAdjacentToOpponentCellWith2Dots = GetBotCellWithDotsAndAdjacentOpponentCellWithDots(botCells, opponentCells, 2);
+        var botCellWith2DotsAndAdjacentToOpponentCellWith2Dots = GetAdjacentCellWithNDots(botCells, opponentCells, 2);
         if (botCellWith2DotsAndAdjacentToOpponentCellWith2Dots != null)
         {
             ProcessBotCellTurn(botCellWith2DotsAndAdjacentToOpponentCellWith2Dots, botTeam);
-            botCellWith2DotsAndAdjacentToOpponentCellWith2Dots.AddDot();
             return;
         }
 
@@ -105,35 +92,52 @@ public class BotLogic : MonoBehaviour
         if (closestBotCellToOpponentCell != null)
         {
             ProcessBotCellTurn(closestBotCellToOpponentCell, botTeam);
-            closestBotCellToOpponentCell.AddDot();
             return;
         }
+    }
+
+    private float GetDistanceBetweenCells(Cell cell1, Cell cell2)
+    {
+        Vector2 cell1Position = cell1.CellInstance.gameObject.transform.position;
+        Vector2 cell2Position = cell2.CellInstance.gameObject.transform.position;
+        return Vector2.Distance(cell1Position, cell2Position);
     }
 
     private Cell FindClosestBotCellToOpponentCell(List<Cell> botCells, List<Cell> opponentCells)
     {
         Cell closestBotCell = null;
-        float minDistance = float.MaxValue;
+        float shortestDistance = float.MaxValue;
 
-        foreach (var botCell in botCells)
+        foreach (Cell botCell in botCells)
         {
-            float distanceToOpponent = botCell.GetDistanceToOpponent(opponentCells);
-            if (distanceToOpponent < minDistance)
+            foreach (Cell opponentCell in opponentCells)
             {
-                minDistance = distanceToOpponent;
-                closestBotCell = botCell;
+                float distance = GetDistanceBetweenCells(botCell, opponentCell);
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    closestBotCell = botCell;
+                }
             }
         }
 
         return closestBotCell;
     }
 
-    private Cell GetBotCellWithDotsAndAdjacentOpponentCellWithDots(List<Cell> botCells, List<Cell> opponentCells, int dots)
+    private bool HasAdjacentCellWithNDots(Cell cell, Cell targetCell, int dotsAmount)
+    {
+        return (cell.Neighbours.top == targetCell && cell.Neighbours.top?.NumberOfDots == dotsAmount) ||
+        (cell.Neighbours.bottom == targetCell && cell.Neighbours.bottom?.NumberOfDots == dotsAmount) ||
+        (cell.Neighbours.right == targetCell && cell.Neighbours.right?.NumberOfDots == dotsAmount) ||
+        (cell.Neighbours.left == targetCell && cell.Neighbours.left?.NumberOfDots == dotsAmount);
+    }
+
+    private Cell GetAdjacentCellWithNDots(List<Cell> botCells, List<Cell> opponentCells, int dots)
     {
         return botCells.FirstOrDefault(botCell =>
             botCell.NumberOfDots == dots &&
             opponentCells.Any(opponentCell =>
-                botCell.HasAdjacentCellWith3Dots(opponentCell) &&
+                HasAdjacentCellWithNDots(botCell, opponentCell, dots) &&
                 opponentCell.NumberOfDots == dots
             )
         );
@@ -142,21 +146,21 @@ public class BotLogic : MonoBehaviour
     private void ProcessBotCellTurn(Cell botCell, Team botTeam)
     {
         GiveTurnIfNotThreeDots(botCell, botTeam);
+        botCell.AddDot();
     }
 
     private void GiveTurnIfNotThreeDots(Cell botCell, Team team)
     {
+        _gameManager.Cells.FirstOrDefault(botCell => botCell.CellTeam == team)?.Material.SetInt("_IsGlowing", 0);
         if (botCell.NumberOfDots != 3)
         {
             StartCoroutine(GiveNextTurn(team));
         }
-        _gameManager.Cells.FirstOrDefault(botCell => botCell.CellTeam == team)?.Material.SetInt("_IsGlowing", 0);
     }
 
     private IEnumerator GiveNextTurn(Team team)
     {
-        _gameManager.Cells.FirstOrDefault(botCell => botCell.CellTeam == team)?.Material.SetInt("_IsGlowing", 0);
-        yield return new WaitForSeconds(Constants.SpeedOfGame);
+        yield return new WaitForSeconds(Constants.SpeedOfGame/4);
         EventAggregator.Post(this, new NextTurn { cellTeam = team });
     }
 }

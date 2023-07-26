@@ -13,9 +13,8 @@ public class GridGenerator : MonoBehaviour
 
     public void GenerateGrid(int rows, int collumns)
     {
-        // Ensure the grid size is at least 1x1
-        rows = Mathf.Max(rows, 1);
-        collumns = Mathf.Max(collumns, 1);
+        rows = Mathf.Max(rows, 3);
+        collumns = Mathf.Max(collumns, 3);
 
         ClearGrid();
 

@@ -1,74 +1,35 @@
-using EventHandler;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
+using EventHandler;
 using UnityEngine.UI;
-
-public enum GameStates { START, PLAYER1TURN = 1, PLAYER2TURN = 2, PLAYER3TURN = 3, PLAYER4TURN = 4, WIN }
+using System.Collections.Generic;
 
 public class PlayersTurnSystem : MonoBehaviour
 {
+    [Header("UI Elements")]
     [SerializeField] private Button _randomPlayerButton;
+    [SerializeField] private Button _restartButton;
+
+    [SerializeField] private Toggle[] _playerBotToggles;
+
+    [SerializeField] private TMP_Text _winText;
+    
+    [Header("Essentials")]
     [SerializeField] private GameManagerScript _gameManager;
+    [SerializeField] private GameObject _winPanel;
 
-    [SerializeField] private Toggle _player1BotToggle; 
-    [SerializeField] private Toggle _player2BotToggle; 
-    [SerializeField] private Toggle _player3BotToggle; 
-    [SerializeField] private Toggle _player4BotToggle; 
+    private const string PLAYER = "PLAYER";
 
-    private List<string> _players;
-    private Dictionary<string, GameStates> states;
-    private Dictionary<string, Toggle> toggles;
-    private Dictionary<GameStates, Team> teamsDictionary;
+    private List<Player> _players;
+    private int _currentPlayerIndex;
 
     public GameStates GameState;
 
-    private void Awake()
-    {
-        states = new Dictionary<string, GameStates>()
-        {
-            { "PLAYER1", GameStates.PLAYER1TURN },
-            { "PLAYER2", GameStates.PLAYER2TURN },
-            { "PLAYER3", GameStates.PLAYER3TURN },
-            { "PLAYER4", GameStates.PLAYER4TURN },
-        };
-
-        teamsDictionary = new Dictionary<GameStates, Team>()
-        {
-            { GameStates.PLAYER1TURN, Team.Team1},
-            { GameStates.PLAYER2TURN, Team.Team2},
-            { GameStates.PLAYER3TURN, Team.Team3},
-            { GameStates.PLAYER4TURN, Team.Team4}
-        };
-
-        toggles = new Dictionary<string, Toggle>()
-        {
-            { "PLAYER1", _player1BotToggle},
-            { "PLAYER2", _player2BotToggle},
-            { "PLAYER3", _player3BotToggle},
-            { "PLAYER4", _player4BotToggle},
-        };
-    }
-
     private void Start()
     {
-        GameState = GameStates.START;
         _randomPlayerButton.onClick.AddListener(RandomStartingPlayer);
-        _players = new List<string>();
+        _players = new List<Player>();
         EventAggregator.Subscribe<Initialization>(InitializePlayers);
-    }
-
-    private void InitializePlayers(object arg1, Initialization arg2)
-    {
-        for (int i = 0; i < _gameManager.numberOfPlayers; i++)
-        {
-            _players.Add($"PLAYER{i + 1}");
-            toggles[_players[i]].gameObject.SetActive(true);
-        }
-        _randomPlayerButton.gameObject.SetActive(true);
     }
 
     private void OnDestroy()
@@ -79,57 +40,103 @@ public class PlayersTurnSystem : MonoBehaviour
         EventAggregator.Unsubscribe<Initialization>(InitializePlayers);
     }
 
-    private void RandomStartingPlayer()
+    private void InitializePlayers(object arg1, Initialization data)
     {
-        GameState = (GameStates)UnityEngine.Random.Range(1, _gameManager.numberOfPlayers + 1);
-        Debug.Log(GameState.ToString());
-        EventAggregator.Subscribe<NextTurn>(ChangeTurn);
-        EventAggregator.Subscribe<PlayerLost>(PLost);
-        List<Team> teams = new();
-        for (int i = 0; i < _gameManager.numberOfPlayers; i++)
+        int numberOfPlayers = _gameManager.numberOfPlayers;
+        _players.Clear();
+
+        for (int i = 1; i < numberOfPlayers + 1; i++)
         {
-            if (toggles[_players[i]].isOn)
-            {
-                teams.Add(teamsDictionary[states[_players[i]]]);
-            }
-            toggles[_players[i]].gameObject.SetActive(false);
+            _players.Add(new Player(PLAYER + i, (Team)i, (GameStates)i, data.teamsColorList[i - 1]));
+            _playerBotToggles[i - 1].gameObject.SetActive(true);
         }
-        EventAggregator.Post(this, new AddBots { teams = teams });
-        _randomPlayerButton.gameObject.SetActive(false);
-        EventAggregator.Post(this, new GetTurn { gameState = GameState });
+
+        _randomPlayerButton.gameObject.SetActive(true);
     }
 
-    private void PLost(object arg1, PlayerLost data)
+    private void RandomStartingPlayer()
     {
-        _players?.Remove(data.PlayerName);
+        int numberOfPlayers = _gameManager.numberOfPlayers;
+        GameState = (GameStates)Random.Range(1, numberOfPlayers + 1);
 
-        if (_players.Count <= 1)
+        EventAggregator.Subscribe<NextTurn>(ChangeTurn);
+        EventAggregator.Subscribe<PlayerLost>(PLost);
+
+        List<Team> teams = new();
+
+        for (int i = 0; i < numberOfPlayers; i++)
         {
-            GameState = GameStates.WIN;
-            Debug.Log("Game Over - Winner: " + _players[0]);
-            Time.timeScale = 0;
+            if (_playerBotToggles[i].isOn)
+            {
+                teams.Add(_players[i].Team);
+            }
+
+            _playerBotToggles[i].gameObject.SetActive(false);
         }
-        else
-        {
-            ChangeTurnToNextPlayer();
-        }
+
+        EventAggregator.Post(this, new AddBots { teams = teams });
+        EventAggregator.Post(this, new GetTurn { gameState = GameState });
+
+        _currentPlayerIndex = _players.FindIndex(player => player.GameState == GameState);
+
+        _randomPlayerButton.gameObject.SetActive(false);
+        _restartButton.gameObject.SetActive(true);
     }
 
     private void ChangeTurn(object arg1, NextTurn turnData)
     {
-        if (GameState != GameStates.WIN && teamsDictionary[GameState] == turnData.cellTeam)
+        if (GameState != GameStates.WIN)
         {
             ChangeTurnToNextPlayer();
+        }
+    }
+
+    private void PLost(object arg1, PlayerLost data)
+    {
+        int currentPlayerIndex = _players.FindIndex(player => player.Name == data.PlayerName);
+        if (currentPlayerIndex != -1)
+        {
+            _players.RemoveAt(currentPlayerIndex);
+        }
+
+        if (_players.Count <= 1)
+        {
+            GameState = GameStates.WIN;
+            _winPanel.SetActive(true);
+            Color teamColor =  _players[0].TeamColor;
+            _winText.text = " WINNER: " + _players[0].Name;
+            _winText.color = teamColor;
+            Time.timeScale = 0;
         }
     }
 
     private void ChangeTurnToNextPlayer()
     {
-        int currentPlayerIndex = _players.IndexOf(states.FirstOrDefault(x => x.Value == GameState).Key);
-        int nextPlayerIndex = (currentPlayerIndex + 1) % _players.Count;
+        int nextPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
+        while (_players[nextPlayerIndex].GameState == GameStates.WIN)
+        {
+            nextPlayerIndex = (nextPlayerIndex + 1) % _players.Count;
+        }
 
-        GameState = states[_players[nextPlayerIndex]];
+        _currentPlayerIndex = nextPlayerIndex;
+        GameState = _players[_currentPlayerIndex].GameState;
+
         EventAggregator.Post(this, new GetTurn { gameState = GameState });
-        Debug.Log(GameState.ToString());
+    }
+}
+
+public struct Player
+{
+    public string Name;
+    public Team Team;
+    public GameStates GameState;
+    public Color TeamColor;
+
+    public Player(string name, Team team, GameStates gameState, Color color) : this()
+    {
+        Name = name;
+        Team = team;
+        GameState = gameState;
+        TeamColor = color;
     }
 }
