@@ -51,8 +51,8 @@ public class GridGenerator : MonoBehaviour
         }
 
         // Adjust the size of the target GameObject to match the _gridLayout size + 10 pixels
-        float targetWidth = gridSizeXTotal + 10;
-        float targetHeight = gridSizeYTotal + 10;
+        float targetWidth = gridSizeXTotal + 40;
+        float targetHeight = gridSizeYTotal + 40;
         _targetGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
     }
 

@@ -3,6 +3,7 @@ using UnityEngine;
 using EventHandler;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class PlayersTurnSystem : MonoBehaviour
 {
@@ -17,11 +18,11 @@ public class PlayersTurnSystem : MonoBehaviour
     [Header("Essentials")]
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private GameObject _winPanel;
-
-    private const string PLAYER = "PLAYER";
+    [SerializeField] private Image _backgroundImage;
 
     private List<Player> _players;
     private int _currentPlayerIndex;
+    private Color _prevPlayerColor;
 
     public GameStates GameState;
 
@@ -42,12 +43,17 @@ public class PlayersTurnSystem : MonoBehaviour
 
     private void InitializePlayers(object arg1, Initialization data)
     {
-        int numberOfPlayers = _gameManager.numberOfPlayers;
+        int numberOfPlayers = _gameManager.NumberOfPlayer;
         _players.Clear();
+
+        _backgroundImage.material.SetColor("_colorToGradient", Color.black);
+        _backgroundImage.material.SetColor("_prevColorToGradient", Color.black);
+
+        ChangeShaderValues(Color.black, Color.black);
 
         for (int i = 1; i < numberOfPlayers + 1; i++)
         {
-            _players.Add(new Player(PLAYER + i, (Team)i, (GameStates)i, data.teamsColorList[i - 1]));
+            _players.Add(new Player(Constants.PLAYER + i, (Team)i, (GameStates)i, data.teamsColorList[i - 1]));
             _playerBotToggles[i - 1].gameObject.SetActive(true);
         }
 
@@ -56,7 +62,7 @@ public class PlayersTurnSystem : MonoBehaviour
 
     private void RandomStartingPlayer()
     {
-        int numberOfPlayers = _gameManager.numberOfPlayers;
+        int numberOfPlayers = _gameManager.NumberOfPlayer;
         GameState = (GameStates)Random.Range(1, numberOfPlayers + 1);
 
         EventAggregator.Subscribe<NextTurn>(ChangeTurn);
@@ -81,6 +87,8 @@ public class PlayersTurnSystem : MonoBehaviour
 
         _randomPlayerButton.gameObject.SetActive(false);
         _restartButton.gameObject.SetActive(true);
+
+        ChangeShaderValues(Color.black, _players[_currentPlayerIndex].TeamColor);
     }
 
     private void ChangeTurn(object arg1, NextTurn turnData)
@@ -96,6 +104,7 @@ public class PlayersTurnSystem : MonoBehaviour
         int currentPlayerIndex = _players.FindIndex(player => player.Name == data.PlayerName);
         if (currentPlayerIndex != -1)
         {
+            _prevPlayerColor = _players[currentPlayerIndex].TeamColor;
             _players.RemoveAt(currentPlayerIndex);
         }
 
@@ -106,22 +115,32 @@ public class PlayersTurnSystem : MonoBehaviour
             Color teamColor =  _players[0].TeamColor;
             _winText.text = " WINNER: " + _players[0].Name;
             _winText.color = teamColor;
-            Time.timeScale = 0;
         }
     }
 
     private void ChangeTurnToNextPlayer()
     {
         int nextPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
-        while (_players[nextPlayerIndex].GameState == GameStates.WIN)
+
+        while (nextPlayerIndex == _currentPlayerIndex)
         {
             nextPlayerIndex = (nextPlayerIndex + 1) % _players.Count;
         }
+
+        if (_currentPlayerIndex < _players.Count) _prevPlayerColor = _players[_currentPlayerIndex].TeamColor;
+        ChangeShaderValues(_prevPlayerColor, _players[nextPlayerIndex].TeamColor);
 
         _currentPlayerIndex = nextPlayerIndex;
         GameState = _players[_currentPlayerIndex].GameState;
 
         EventAggregator.Post(this, new GetTurn { gameState = GameState });
+    }
+
+    private void ChangeShaderValues(Color previousColor, Color nextColor)
+    {
+        _backgroundImage.material.SetFloat("_startTime", Time.time);
+        _backgroundImage.material.SetColor("_prevColorToGradient", previousColor);
+        _backgroundImage.material.SetColor("_colorToGradient", nextColor);
     }
 }
 

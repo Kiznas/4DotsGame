@@ -7,10 +7,6 @@ using System.Collections.Generic;
 
 public class GameManagerScript : MonoBehaviour
 {
-    [Header("Grid Size & Player Num")]
-    public int gridSize;
-    public int numberOfPlayers;
-
     [Header("Essentials")]
     [SerializeField] private GridGenerator _gridGenerator;
     [SerializeField] private GameManagerUI _gameManagerUI;
@@ -23,11 +19,14 @@ public class GameManagerScript : MonoBehaviour
 
     public Cell[] Cells;
     private Queue<Cell> _cellQueue;
-    private Stack<Cell> _stackToChange = new();
+    private readonly Stack<Cell> _stackToChange = new();
     private HashSet<Team> _previouslyAliveTeams = new();
 
     private int _cellIndex;
+    private int numberOfPlayers;
+
     private bool _isProceeding;
+    public int NumberOfPlayer { get { return numberOfPlayers; } }
 
     private void OnDestroy()
     {
@@ -43,12 +42,11 @@ public class GameManagerScript : MonoBehaviour
         (rowsSize, columnsSize) = _gameManagerUI.GetCurrentMode();
 
         Cells = new Cell[rowsSize * columnsSize];
+        _cellQueue = new Queue<Cell>();
 
         EventAggregator.Subscribe<CellAdded>(AddCellToArray);
         EventAggregator.Subscribe<AddToNearbyCells>(AddToNearbyCells);
         EventAggregator.Post(this, new Initialization { teamsColorList = _playersColors });
-
-        _cellQueue = new Queue<Cell>();
 
         _gridGenerator.GenerateGrid(rowsSize, columnsSize);
         AddCells(rowsSize, columnsSize, numberOfPlayers);
@@ -68,15 +66,15 @@ public class GameManagerScript : MonoBehaviour
             AddNeighbours(cell);
         }
 
-        int[] playerPosX = { 1, rows - 2, 1, rows - 2 };
-        int[] playerPosY = { 1, columns - 2, columns - 2, 1 };
+        int[] playersPosX = { 1, rows - 2, 1, rows - 2 };
+        int[] playersPosY = { 1, columns - 2, columns - 2, 1 };
 
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            int posX = playerPosX[i % 4];
-            int posY = playerPosY[i % 4];
+            int posX = playersPosX[i % 4];
+            int posY = playersPosY[i % 4];
 
-            AddDotsToCells(posX, posY, _playersColors[i], _playersMaterials[i], (Team)i+1);
+            AddDotsToCells(posX, posY, _playersColors[i], _playersMaterials[i], (Team)i + 1);
         }
     }
 
@@ -89,8 +87,7 @@ public class GameManagerScript : MonoBehaviour
     {
         Cell cell = GetCellAtPos(posColumn, posRow);
         cell.SetTeam(teamColor, material, team);
-        cell.NumberOfDots = 2;
-        cell.AddDot();
+        for (int i = 0; i < 3; i++) { cell.AddDot();}
     }
 
     private async void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
@@ -113,6 +110,7 @@ public class GameManagerScript : MonoBehaviour
         while (_cellQueue.Count > 0)
         {
             List<Cell> cellsWaves = new();
+
             while (_cellQueue.Count > 0)
             {
                 var cellData = _cellQueue.Dequeue();
@@ -123,13 +121,13 @@ public class GameManagerScript : MonoBehaviour
                 ProcessCell(cellData);
             }
             
-            await Task.Delay(TimeSpan.FromSeconds(Constants.SpeedOfGame));
+            await Task.Delay(TimeSpan.FromSeconds(Constants.SPEEDOFGAME));
         }
 
         var aliveTeams = new HashSet<Team>(Cells.Select(cell => cell.CellTeam));
         foreach (var lostTeam in _previouslyAliveTeams.Except(aliveTeams))
         {
-            var playerName = "PLAYER" + (int)lostTeam;
+            var playerName = Constants.PLAYER + (int)lostTeam;
             EventAggregator.Post(this, new PlayerLost { PlayerName = playerName });
         }
 
@@ -149,8 +147,8 @@ public class GameManagerScript : MonoBehaviour
             await item.UpdateImageAsync();
             cellsDone++;
         }
-        Debug.Log($"CellsDone{cellsDone}");
         _stackToChange.Clear();
+        Resources.UnloadUnusedAssets();
         await Task.Delay(2);
     }
 
@@ -168,20 +166,10 @@ public class GameManagerScript : MonoBehaviour
         {
             if (item != null && cell.TeamColor != Color.white)
             {
-                if (item.NumberOfDots == 3)
-                {
-                    item.SetTeam(cell.TeamColor, cell.Material, cell.CellTeam);
-                    item.NumberOfDots++;
-                    item.UpdateImage();
-                    _cellQueue.Enqueue(item);
-                    StartCoroutine(item.CellInstance.SpreadAnimation(true, item.TeamColor));
-                }
-                else
-                {
-                    item.SetTeam(cell.TeamColor, cell.Material, cell.CellTeam);
-                    item.AddDot();
-                }
+                item.SetTeam(cell.TeamColor, cell.Material, cell.CellTeam);
+                item.AddDot();
             }
+
             StackAdd(item);
         }
         cell.ClearCell();

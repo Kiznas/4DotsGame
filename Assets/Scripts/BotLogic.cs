@@ -8,7 +8,7 @@ public class BotLogic : MonoBehaviour
 {
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private PlayersTurnSystem _turnSysten;
-    private List<Team> _botTeams = new List<Team>();
+    private List<Team> _botTeams = new();
 
     private void Start()
     {
@@ -41,7 +41,7 @@ public class BotLogic : MonoBehaviour
 
     private IEnumerator BotDelay(Team team)
     {
-        yield return new WaitForSeconds(Constants.SpeedOfGame/2);
+        yield return new WaitForSeconds(Constants.SPEEDOFGAME);
         TakeBotTurn(team);
     }
 
@@ -145,22 +145,19 @@ public class BotLogic : MonoBehaviour
 
     private void ProcessBotCellTurn(Cell botCell, Team botTeam)
     {
-        GiveTurnIfNotThreeDots(botCell, botTeam);
-        botCell.AddDot();
-    }
+        _gameManager.Cells.FirstOrDefault(botCell => botCell.CellTeam == botTeam)?.Material.SetInt("_IsGlowing", 0);
 
-    private void GiveTurnIfNotThreeDots(Cell botCell, Team team)
-    {
-        _gameManager.Cells.FirstOrDefault(botCell => botCell.CellTeam == team)?.Material.SetInt("_IsGlowing", 0);
         if (botCell.NumberOfDots != 3)
         {
-            StartCoroutine(GiveNextTurn(team));
+            StartCoroutine(GiveNextTurn(botTeam));
         }
+
+        botCell.AddDot();
     }
 
     private IEnumerator GiveNextTurn(Team team)
     {
-        yield return new WaitForSeconds(Constants.SpeedOfGame/4);
+        yield return new WaitForSeconds(Constants.SPEEDOFGAME);
         EventAggregator.Post(this, new NextTurn { cellTeam = team });
     }
 }

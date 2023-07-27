@@ -36,7 +36,7 @@ public class GameManagerUI : MonoBehaviour
         _rowInput.onEndEdit.AddListener(delegate { MyValidate(_rowInput); });
         _columnInput.onEndEdit.AddListener(delegate { MyValidate(_columnInput); });
 
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 144;
     }
 
     private void OnDestroy()
@@ -70,7 +70,6 @@ public class GameManagerUI : MonoBehaviour
 
     public void RestartGame()
     {
-        Time.timeScale = 1.0f;
         SceneManager.LoadScene(0);
     }
 
@@ -102,7 +101,7 @@ public class GameManagerUI : MonoBehaviour
         if (string.IsNullOrEmpty(text) || text == "-")
             return;
 
-        int minValue = 4;
+        int minValue = 5;
         int maxValue = 20;
 
         if (int.TryParse(text, out int number))

@@ -3,51 +3,45 @@
     "m_SelectedPackage": {
         "deviceId": "4f417836",
         "name": "com.KlymAndCompany.Dots4",
-        "processId": 25017,
+        "processId": 21736,
         "exited": false
     },
     "m_SelectedPriority": 0,
     "m_KnownPackagesForSerialization": [
         {
             "deviceId": "4f417836",
-            "name": "com.android.settings",
-            "processId": 9346,
-            "exited": false
-        },
-        {
-            "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 11451,
-            "exited": true
-        },
-        {
-            "deviceId": "4f417836",
-            "name": "com.KlymAndCompany.Dots4",
-            "processId": 12813,
+            "processId": 25017,
             "exited": true
         },
         {
             "deviceId": "4f417836",
             "name": "org.telegram.messenger",
-            "processId": 10738,
+            "processId": 7739,
             "exited": false
         },
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 23224,
+            "processId": 31105,
             "exited": true
         },
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 28092,
+            "processId": 16621,
             "exited": true
         },
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 25017,
+            "processId": 17566,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 21736,
             "exited": false
         }
     ],
@@ -92,14 +86,14 @@
             true,
             true,
             true,
-            false,
+            true,
             true,
             true,
             true,
             true
         ],
         "MemoryGroup": 1,
-        "Behavior": 2
+        "Behavior": 1
     },
     "m_FilterOptions": {
         "m_Filter": "",

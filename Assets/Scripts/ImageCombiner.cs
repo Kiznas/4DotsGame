@@ -53,11 +53,6 @@ public class ImageCombiner : MonoBehaviour
         combinedImage.SetPixels32(combinedPixels);
         combinedImage.Apply();
 
-        if (_image.sprite != null)
-        {
-            Resources.UnloadUnusedAssets();
-        }
-
         Sprite sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero);
         _image.sprite = sprite;
     }
@@ -100,11 +95,6 @@ public class ImageCombiner : MonoBehaviour
         Texture2D combinedImage = new(combinedWidth, combinedHeight);
         combinedImage.SetPixels32(combinedPixels);
         combinedImage.Apply();
-
-        if (_image.sprite != null)
-        {
-            Resources.UnloadUnusedAssets();
-        }
 
         Sprite sprite = Sprite.Create(combinedImage, new Rect(0, 0, combinedWidth, combinedHeight), Vector2.zero);
         _image.sprite = sprite;
