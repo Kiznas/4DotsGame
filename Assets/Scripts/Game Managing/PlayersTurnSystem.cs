@@ -1,9 +1,8 @@
+using EventHandler;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using EventHandler;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 
 public class PlayersTurnSystem : MonoBehaviour
 {
@@ -14,7 +13,7 @@ public class PlayersTurnSystem : MonoBehaviour
     [SerializeField] private Toggle[] _playerBotToggles;
 
     [SerializeField] private TMP_Text _winText;
-    
+
     [Header("Essentials")]
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private GameObject _winPanel;
@@ -112,7 +111,7 @@ public class PlayersTurnSystem : MonoBehaviour
         {
             GameState = GameStates.WIN;
             _winPanel.SetActive(true);
-            Color teamColor =  _players[0].TeamColor;
+            Color teamColor = _players[0].TeamColor;
             _winText.text = " WINNER: " + _players[0].Name;
             _winText.color = teamColor;
         }

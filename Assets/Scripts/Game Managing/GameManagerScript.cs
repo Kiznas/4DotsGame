@@ -1,9 +1,9 @@
-using System;
-using System.Linq;
-using UnityEngine;
 using EventHandler;
-using System.Threading.Tasks;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
 
 public class GameManagerScript : MonoBehaviour
 {
@@ -87,7 +87,7 @@ public class GameManagerScript : MonoBehaviour
     {
         Cell cell = GetCellAtPos(posColumn, posRow);
         cell.SetTeam(teamColor, material, team);
-        for (int i = 0; i < 3; i++) { cell.AddDot();}
+        for (int i = 0; i < 3; i++) { cell.AddDot(); }
     }
 
     private async void AddToNearbyCells(object arg1, AddToNearbyCells cellData)
@@ -120,7 +120,7 @@ public class GameManagerScript : MonoBehaviour
             {
                 ProcessCell(cellData);
             }
-            
+
             await Task.Delay(TimeSpan.FromSeconds(Constants.SPEEDOFGAME));
         }
 
@@ -136,13 +136,15 @@ public class GameManagerScript : MonoBehaviour
 
         await UpdateImages();
 
+        await Task.WhenAll(UpdateImages());
+
         EventAggregator.Post(this, new NextTurn { cellTeam = team });
     }
 
     async Task UpdateImages()
     {
         int cellsDone = 0;
-        foreach (var item in _stackToChange)
+        foreach (var item in _stackToChange.ToList())
         {
             await item.UpdateImageAsync();
             cellsDone++;
@@ -190,7 +192,7 @@ public class GameManagerScript : MonoBehaviour
 
     private void StackAdd(Cell cell)
     {
-        if(cell != null)
+        if (cell != null)
         {
             List<Cell> cells = new()
             {

@@ -1,8 +1,8 @@
-using System.Linq;
-using UnityEngine;
 using EventHandler;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class BotLogic : MonoBehaviour
 {
@@ -34,7 +34,7 @@ public class BotLogic : MonoBehaviour
             if (turnData.gameState == Constants.TeamsDictionary[botTeam])
             {
                 StartCoroutine(BotDelay(botTeam));
-                return; 
+                return;
             }
         }
     }

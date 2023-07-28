@@ -2920,7 +2920,6 @@ GameObject:
   - component: {fileID: 699660710}
   - component: {fileID: 699660707}
   - component: {fileID: 699660708}
-  - component: {fileID: 699660709}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3005,19 +3004,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _gameManager: {fileID: 699660705}
   _turnSysten: {fileID: 699660707}
---- !u!114 &699660709
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 699660702}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3139d3e4e958ec4d9a5d58b6ad35cca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _textOfFps: {fileID: 1315967428}
 --- !u!114 &699660710
 MonoBehaviour:
   m_ObjectHideFlags: 0

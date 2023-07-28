@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "4f417836",
         "name": "com.KlymAndCompany.Dots4",
-        "processId": 21736,
+        "processId": 27062,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -11,37 +11,37 @@
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 25017,
+            "processId": 21736,
             "exited": true
         },
         {
             "deviceId": "4f417836",
-            "name": "org.telegram.messenger",
-            "processId": 7739,
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 28346,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.KlymAndCompany.Dots4",
+            "processId": 19030,
+            "exited": true
+        },
+        {
+            "deviceId": "4f417836",
+            "name": "com.actionlauncher.playstore",
+            "processId": 11982,
             "exited": false
         },
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 31105,
+            "processId": 12897,
             "exited": true
         },
         {
             "deviceId": "4f417836",
             "name": "com.KlymAndCompany.Dots4",
-            "processId": 16621,
-            "exited": true
-        },
-        {
-            "deviceId": "4f417836",
-            "name": "com.KlymAndCompany.Dots4",
-            "processId": 17566,
-            "exited": true
-        },
-        {
-            "deviceId": "4f417836",
-            "name": "com.KlymAndCompany.Dots4",
-            "processId": 21736,
+            "processId": 27062,
             "exited": false
         }
     ],
