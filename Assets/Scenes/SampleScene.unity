@@ -181,7 +181,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PLAYER NUMBER
+  m_text: PLAYERS AMOUNT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
   m_sharedMaterial: {fileID: 804885521754485437, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
@@ -985,7 +985,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 5
+  m_Text: 7
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -1375,7 +1375,7 @@ GameObject:
   - component: {fileID: 367519952}
   m_Layer: 5
   m_Name: Custom
-  m_TagString: REGULAR
+  m_TagString: REGULAR GRID
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1399,7 +1399,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -860}
-  m_SizeDelta: {x: 400, y: 150}
+  m_SizeDelta: {x: 450, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &367519952
 MonoBehaviour:
@@ -3003,7 +3003,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gameManager: {fileID: 699660705}
-  _turnSysten: {fileID: 699660707}
+  _turnSystem: {fileID: 0}
 --- !u!114 &699660710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3368,7 +3368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.49492073, g: 1, b: 0, a: 1}
+  m_Color: {r: 0.95129585, g: 1, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3609,7 +3609,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "5\u200B"
+  m_text: "7\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
   m_sharedMaterial: {fileID: 804885521754485437, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
@@ -3948,7 +3948,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 5
+  m_Text: 7
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -4668,9 +4668,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'CUSTOM
-
-'
+  m_text: CUSTOM GRID
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
   m_sharedMaterial: {fileID: 804885521754485437, guid: 6611bf58bccf9594eaf20fdb35e8b50e, type: 2}
@@ -6250,7 +6248,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 5
+  m_Text: 7
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0

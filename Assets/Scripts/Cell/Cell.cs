@@ -14,16 +14,12 @@ public class Cell
 
     public int PosRow { get { return _posRow; } }
     public int PosColumn { get { return _posColumn; } }
+    public int NumberOfDots { get { return _numberOfDots; } }
     public Team CellTeam { get { return _team; } }
     public Color TeamColor { get { return _teamColor; } }
     public Material Material { get { return _material; } }
     public CellInstance CellInstance { get { return _cellInstance; } }
-
-    public int NumberOfDots
-    {
-        get { return _numberOfDots; }
-        set { _numberOfDots = value; }
-    }
+    
     public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
     {
         get { return _neighbours; }

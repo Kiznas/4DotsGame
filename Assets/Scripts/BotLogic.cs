@@ -7,7 +7,7 @@ using UnityEngine;
 public class BotLogic : MonoBehaviour
 {
     [SerializeField] private GameManagerScript _gameManager;
-    [SerializeField] private PlayersTurnSystem _turnSysten;
+    [SerializeField] private PlayersTurnSystem _turnSystem;
     private List<Team> _botTeams = new();
 
     private void Start()
