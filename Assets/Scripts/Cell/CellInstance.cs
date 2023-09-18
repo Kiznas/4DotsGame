@@ -1,109 +1,116 @@
-using EventHandler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Events;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CellInstance : MonoBehaviour
+namespace Cell
 {
-    [SerializeField] private Button _button;
-    [SerializeField] private ParticleSystem _particle;
-    public ImageCombiner ImageCombiner;
-    public Image Image;
-
-    private List<Team> _botTeams;
-
-    private Cell _cell;
-    private bool _teamTurn;
-
-    private void Start()
+    public class CellInstance : MonoBehaviour
     {
-        _button.onClick.AddListener(OnClick);
-    }
+        [SerializeField] private Button button;
+        [SerializeField] private ParticleSystem particle;
+        public ImageCombiner imageCombiner;
+        public Image image;
 
-    private void OnDestroy()
-    {
-        _button.onClick.RemoveAllListeners();
-        EventAggregator.Unsubscribe<GetTurn>(SetTurn);
-        EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
-        EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
-        if (_cell != null && _cell.Material != null)
+        private List<Enums.Team> _botTeams;
+
+        private Cell _cell;
+        private bool _teamTurn;
+        private static readonly int IsGlowing = Shader.PropertyToID("_IsGlowing");
+        private static readonly int CurrentTime = Shader.PropertyToID("_Current_Time");
+
+        private void Start()
         {
-            _cell.Material.SetInt("_IsGlowing", 0);
+            button.onClick.AddListener(OnClick);
         }
-    }
-    public void CreateCellInstance(int row, int column)
-    {
-        _cell = new Cell(row, column, this);
-        EventAggregator.Post(this, new CellAdded { Cell = _cell });
-        EventAggregator.Subscribe<GetTurn>(SetTurn);
-        EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
-        EventAggregator.Subscribe<AddBots>(AddBotsTeams);
-    }
 
-    private void AddBotsTeams(object arg1, AddBots data)
-    {
-        _botTeams = data.teams;
-    }
-
-    private void PrepareTurn(object arg1, PrepareForNextTurn team)
-    {
-        if (team.cellTeam == _cell.CellTeam)
+        private void OnDestroy()
         {
-            _teamTurn = false;
-            _cell.Material.SetInt("_IsGlowing", 0);
-        }
-    }
-
-    private void SetTurn(object arg1, GetTurn turn)
-    {
-        if (_cell.CellTeam != Team.None)
-        {
-            var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
-            if (turn.gameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.gameState]))
+            button.onClick.RemoveAllListeners();
+            EventAggregator.Unsubscribe<GetTurn>(SetTurn);
+            EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
+            EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
+            if (_cell != null && _cell.Material != null)
             {
-                _cell.Material.SetInt("_IsGlowing", 1);
-                _cell.Material.SetFloat("_Current_Time", Time.time);
-                _teamTurn = true;
+                _cell.Material.SetInt(IsGlowing, 0);
             }
         }
-    }
-
-    private void OnClick()
-    {
-        if (_cell.TeamColor != Color.white && _teamTurn)
+        public void CreateCellInstance(int row, int column)
         {
-            EventAggregator.Post(this, new PrepareForNextTurn { cellTeam = _cell.CellTeam });
-            if (_cell.NumberOfDots != 3) { StartCoroutine(NextTurnWithDelay()); }
-            _cell.AddDot();
+            _cell = new Cell(row, column, this);
+            EventAggregator.Post(this, new CellAdded { Cell = _cell });
+            EventAggregator.Subscribe<GetTurn>(SetTurn);
+            EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
+            EventAggregator.Subscribe<AddBots>(AddBotsTeams);
         }
-    }
 
-    private IEnumerator NextTurnWithDelay()
-    {
-        yield return new WaitForSeconds(Constants.SPEEDOFGAME);
-        EventAggregator.Post(this, new NextTurn { cellTeam = _cell.CellTeam });
-    }
-
-    public IEnumerator AddToNearby()
-    {
-        yield return new WaitForSeconds(Constants.SPEEDOFGAME);
-
-        StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
-        EventAggregator.Post(this, new AddToNearbyCells { cell = _cell });
-    }
-
-    public IEnumerator SpreadAnimation(bool withDelay, Color teamColor)
-    {
-        if (withDelay)
+        private void AddBotsTeams(object arg1, AddBots data)
         {
-            yield return new WaitForSeconds(Constants.SPEEDOFGAME);
+            _botTeams = data.Teams;
         }
-        ParticleSystem particle = Instantiate(_particle, gameObject.transform.position, gameObject.transform.rotation, gameObject.transform);
-        var particleMain = particle.main;
-        particleMain.startColor = teamColor;
-        Destroy(particle.gameObject, 3f);
-        yield return null;
+
+        private void PrepareTurn(object arg1, PrepareForNextTurn team)
+        {
+            if (team.CellTeam == _cell.CellTeam)
+            {
+                _teamTurn = false;
+                _cell.Material.SetInt(IsGlowing, 0);
+            }
+        }
+
+        private void SetTurn(object arg1, GetTurn turn)
+        {
+            if (_cell.CellTeam != Enums.Team.None)
+            {
+                var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
+                if (turn.GameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
+                {
+                    _cell.Material.SetInt(IsGlowing, 1);
+                    _cell.Material.SetFloat(CurrentTime, Time.time);
+                    _teamTurn = true;
+                }
+            }
+        }
+
+        private void OnClick()
+        {
+            if (_cell.TeamColor != Color.white && _teamTurn)
+            {
+                EventAggregator.Post(this, new PrepareForNextTurn { CellTeam = _cell.CellTeam });
+                if (_cell.NumberOfDots != 3) { StartCoroutine(NextTurnWithDelay()); }
+                _cell.AddDot();
+            }
+        }
+
+        private IEnumerator NextTurnWithDelay()
+        {
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
+            EventAggregator.Post(this, new NextTurn { CellTeam = _cell.CellTeam });
+        }
+
+        public IEnumerator AddToNearby()
+        {
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
+
+            StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
+            EventAggregator.Post(this, new AddToNearbyCells { Cell = _cell });
+        }
+
+        private IEnumerator SpreadAnimation(bool withDelay, Color teamColor)
+        {
+            if (withDelay)
+            {
+                yield return new WaitForSeconds(Constants.SpeedOfGame);
+            }
+
+            var o = gameObject;
+            var system = Instantiate(particle, o.transform.position, o.transform.rotation, o.transform);
+            var particleMain = system.main;
+            particleMain.startColor = teamColor;
+            Destroy(system.gameObject, 3f);
+            yield return null;
+        }
     }
 }

@@ -2939,18 +2939,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8005b7760f523e4d92fab45c1b40204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gridGenerator: {fileID: 906745544}
-  _gameManagerUI: {fileID: 699660710}
-  _playersMaterials:
+  gridGenerator: {fileID: 906745544}
+  gameManagerUI: {fileID: 699660710}
+  playersMaterials:
   - {fileID: 2100000, guid: d3ddc737bdaac6a40b6b1f1e4a4daed4, type: 2}
   - {fileID: 2100000, guid: 5be3cbde2b2b7be41898ce50180eb311, type: 2}
   - {fileID: 2100000, guid: 036de7056e6430c43ae7afb30d371baa, type: 2}
   - {fileID: 2100000, guid: c4ed3551d2372d644bd37f4be7acbd0f, type: 2}
-  _playersColors:
-  - {r: 0.5019608, g: 0, b: 1, a: 1}
-  - {r: 0, g: 1, b: 1, a: 1}
+  playersColors:
   - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0.5019608, g: 1, b: 0, a: 1}
+  - {r: 0.5, g: 1, b: 0, a: 1}
+  - {r: 0, g: 1, b: 1, a: 1}
+  - {r: 0.5, g: 0, b: 1, a: 1}
 --- !u!4 &699660706
 Transform:
   m_ObjectHideFlags: 0
@@ -2978,18 +2978,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d3450fb0dc16654da44fdbc6349f7ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _randomPlayerButton: {fileID: 2082580083}
-  _restartButton: {fileID: 653130639}
-  _playerBotToggles:
+  randomPlayerButton: {fileID: 2082580083}
+  restartButton: {fileID: 653130639}
+  playerBotToggles:
   - {fileID: 1544835364}
   - {fileID: 1659713376}
   - {fileID: 1301245060}
   - {fileID: 1973952472}
-  _winText: {fileID: 595168655}
-  _gameManager: {fileID: 699660705}
-  _winPanel: {fileID: 961229882}
-  _backgroundImage: {fileID: 349885269}
-  GameState: 1
+  winText: {fileID: 595168655}
+  gameManager: {fileID: 699660705}
+  winPanel: {fileID: 961229882}
+  backgroundImage: {fileID: 349885269}
+  gameState: 0
 --- !u!114 &699660708
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3002,8 +3002,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2eb164a6bba8194b87450cf2965a108, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameManager: {fileID: 699660705}
-  _turnSystem: {fileID: 0}
+  gameManager: {fileID: 699660705}
 --- !u!114 &699660710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3016,17 +3015,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6faf1d31eb9d8a54084266ca58c90698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _initializeButton: {fileID: 907755490}
-  _restart: {fileID: 653130639}
-  _customGridButton: {fileID: 367519952}
-  _playersNumberSlider: {fileID: 382125761}
-  _gridSizeInput: {fileID: 1074167313}
-  _rowInput: {fileID: 2145224879}
-  _columnInput: {fileID: 198389971}
-  _customInputFields: {fileID: 1883979727}
-  _background: {fileID: 349885267}
-  _gridSetting: {fileID: 562672817}
-  _gameManager: {fileID: 699660705}
+  initializeButton: {fileID: 907755490}
+  restart: {fileID: 653130639}
+  customGridButton: {fileID: 367519952}
+  playersNumberSlider: {fileID: 382125761}
+  gridSizeInput: {fileID: 1074167313}
+  rowInput: {fileID: 198389971}
+  columnInput: {fileID: 2145224879}
+  customInputFields: {fileID: 1883979727}
+  background: {fileID: 349885267}
+  gridSetting: {fileID: 562672817}
+  gameManager: {fileID: 699660705}
 --- !u!1 &838995032
 GameObject:
   m_ObjectHideFlags: 0

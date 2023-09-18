@@ -1,89 +1,75 @@
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class Cell
+namespace Cell
 {
-    private CellInstance _cellInstance;
-    private readonly int _posRow;
-    private readonly int _posColumn;
-    private int _numberOfDots;
-    private Color _teamColor = Color.white;
-    private Material _material;
-    private (Cell, Cell, Cell, Cell) _neighbours;
-    private Team _team;
+    public class Cell
+    {
+        private (Cell, Cell, Cell, Cell) _neighbours;
 
-    public int PosRow { get { return _posRow; } }
-    public int PosColumn { get { return _posColumn; } }
-    public int NumberOfDots { get { return _numberOfDots; } }
-    public Team CellTeam { get { return _team; } }
-    public Color TeamColor { get { return _teamColor; } }
-    public Material Material { get { return _material; } }
-    public CellInstance CellInstance { get { return _cellInstance; } }
-    
-    public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
-    {
-        get { return _neighbours; }
-        set { _neighbours = value; }
-    }
+        public int PosRow { get; }
+        public int PosColumn { get; }
+        public int NumberOfDots { get; private set; }
+        public Enums.Team CellTeam { get; private set; }
+        public Color TeamColor { get; private set; } = Color.white;
+        public Material Material { get; private set; }
+        public CellInstance CellInstance { get; }
 
-    public Cell(int posX, int posY, CellInstance cellInstance)
-    {
-        _posRow = posX;
-        _posColumn = posY;
-        _cellInstance = cellInstance;
-    }
+        public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
+        {
+            get => _neighbours;
+            set => _neighbours = value;
+        }
 
-    public void AddDot()
-    {
-        _numberOfDots++;
-        if (_numberOfDots >= 4)
+        public Cell(int posX, int posY, CellInstance cellInstance)
         {
-            UpdateImage();
-            _cellInstance.StartCoroutine(_cellInstance.AddToNearby());
+            PosRow = posX;
+            PosColumn = posY;
+            CellInstance = cellInstance;
         }
-        else
+
+        public void AddDot()
         {
-            UpdateImage();
+            NumberOfDots++;
+            if (NumberOfDots >= 4) {
+                UpdateImage();
+                CellInstance.StartCoroutine(CellInstance.AddToNearby());
+            }
+            else {
+                UpdateImage();
+            }
         }
-    }
-    public void SetTeam(Color teamColor, Material material, Team team)
-    {
-        _team = team;
-        _teamColor = teamColor;
-        _material = material;
-        if (teamColor != null && _material != null)
+        public void SetTeam(Color teamColor, Material material, Enums.Team team)
         {
-            _material.color = teamColor;
+            CellTeam = team;
+            TeamColor = teamColor;
+            Material = material;
+            if (Material != null)
+                Material.color = teamColor;
+            
+            CellInstance.image.material = Material;
         }
-        _cellInstance.Image.material = _material;
-    }
-    public void ClearCell()
-    {
-        _team = Team.None;
-        _teamColor = Color.white;
-        _numberOfDots = 0;
-        _cellInstance.ImageCombiner.ClearImage((Texture2D)_cellInstance.Image.mainTexture);
-    }
-    public void UpdateImage()
-    {
-        if (_numberOfDots != 0 && _team != Team.None)
+        public void ClearCell()
         {
-            _cellInstance.ImageCombiner.CombineImages(_numberOfDots,
-                                     Neighbours.top?.CellTeam == _team,
-                                     Neighbours.right?.CellTeam == _team,
-                                     Neighbours.bottom?.CellTeam == _team,
-                                     Neighbours.left?.CellTeam == _team);
+            CellTeam = Enums.Team.None;
+            TeamColor = Color.white;
+            NumberOfDots = 0;
+            CellInstance.imageCombiner.ClearImage((Texture2D)CellInstance.image.mainTexture);
         }
-    }
-    public async Task UpdateImageAsync()
-    {
-        if (_numberOfDots != 0 && _team != Team.None)
+
+        private void UpdateImage()
         {
-            await _cellInstance.ImageCombiner.CombineImagesAsync(_numberOfDots,
-                                     Neighbours.top?.CellTeam == _team,
-                                     Neighbours.right?.CellTeam == _team,
-                                     Neighbours.bottom?.CellTeam == _team,
-                                     Neighbours.left?.CellTeam == _team);
+            if (NumberOfDots != 0 && CellTeam != Enums.Team.None)
+            {
+                CellInstance.imageCombiner.CombineImages(NumberOfDots, Neighbours, CellTeam);
+            }
+        }
+        public async Task UpdateImageAsync()
+        {
+            if (NumberOfDots != 0 && CellTeam != Enums.Team.None)
+            {
+                await CellInstance.imageCombiner.CombineImagesAsync(NumberOfDots, Neighbours, CellTeam);
+            }
         }
     }
 }

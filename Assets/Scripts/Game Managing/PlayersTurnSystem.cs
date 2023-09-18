@@ -1,160 +1,163 @@
-using EventHandler;
 using System.Collections.Generic;
+using Events;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayersTurnSystem : MonoBehaviour
+namespace Game_Managing
 {
-    [Header("UI Elements")]
-    [SerializeField] private Button _randomPlayerButton;
-    [SerializeField] private Button _restartButton;
-
-    [SerializeField] private Toggle[] _playerBotToggles;
-
-    [SerializeField] private TMP_Text _winText;
-
-    [Header("Essentials")]
-    [SerializeField] private GameManagerScript _gameManager;
-    [SerializeField] private GameObject _winPanel;
-    [SerializeField] private Image _backgroundImage;
-
-    private List<Player> _players;
-    private int _currentPlayerIndex;
-    private Color _prevPlayerColor;
-
-    public GameStates GameState;
-
-    private void Start()
+    public class PlayersTurnSystem : MonoBehaviour
     {
-        _randomPlayerButton.onClick.AddListener(RandomStartingPlayer);
-        _players = new List<Player>();
-        EventAggregator.Subscribe<Initialization>(InitializePlayers);
-    }
+        [Header("UI Elements")]
+        [SerializeField] private Button randomPlayerButton;
+        [SerializeField] private Button restartButton;
+        [SerializeField] private Toggle[] playerBotToggles;
+        [SerializeField] private TMP_Text winText;
+        [Header("Essentials")]
+        [SerializeField] private GameManage gameManager;
+        [SerializeField] private GameObject winPanel;
+        [SerializeField] private Image backgroundImage;
 
-    private void OnDestroy()
-    {
-        _randomPlayerButton.onClick.RemoveAllListeners();
-        EventAggregator.Unsubscribe<NextTurn>(ChangeTurn);
-        EventAggregator.Unsubscribe<PlayerLost>(PLost);
-        EventAggregator.Unsubscribe<Initialization>(InitializePlayers);
-    }
+        private List<Player> _players;
+        private int _currentPlayerIndex;
+        private Color _prevPlayerColor;
 
-    private void InitializePlayers(object arg1, Initialization data)
-    {
-        int numberOfPlayers = _gameManager.NumberOfPlayer;
-        _players.Clear();
+        public Enums.GameStates gameState;
+        private readonly int _colorToGradient = Shader.PropertyToID("_colorToGradient");
+        private readonly int _prevColorToGradient = Shader.PropertyToID("_prevColorToGradient");
+        private readonly int _startTime = Shader.PropertyToID("_startTime");
 
-        _backgroundImage.material.SetColor("_colorToGradient", Color.black);
-        _backgroundImage.material.SetColor("_prevColorToGradient", Color.black);
-
-        ChangeShaderValues(Color.black, Color.black);
-
-        for (int i = 1; i < numberOfPlayers + 1; i++)
+        private void Start()
         {
-            _players.Add(new Player(Constants.PLAYER + i, (Team)i, (GameStates)i, data.teamsColorList[i - 1]));
-            _playerBotToggles[i - 1].gameObject.SetActive(true);
+            randomPlayerButton.onClick.AddListener(RandomStartingPlayer);
+            _players = new List<Player>();
+            EventAggregator.Subscribe<Initialization>(InitializePlayers);
         }
 
-        _randomPlayerButton.gameObject.SetActive(true);
-    }
-
-    private void RandomStartingPlayer()
-    {
-        int numberOfPlayers = _gameManager.NumberOfPlayer;
-        GameState = (GameStates)Random.Range(1, numberOfPlayers + 1);
-
-        EventAggregator.Subscribe<NextTurn>(ChangeTurn);
-        EventAggregator.Subscribe<PlayerLost>(PLost);
-
-        List<Team> teams = new();
-
-        for (int i = 0; i < numberOfPlayers; i++)
+        private void OnDestroy()
         {
-            if (_playerBotToggles[i].isOn)
+            randomPlayerButton.onClick.RemoveAllListeners();
+            EventAggregator.Unsubscribe<NextTurn>(ChangeTurn);
+            EventAggregator.Unsubscribe<PlayerLost>(PLost);
+            EventAggregator.Unsubscribe<Initialization>(InitializePlayers);
+        }
+
+        private void InitializePlayers(object arg1, Initialization data)
+        {
+            int numberOfPlayers = gameManager.NumberOfPlayer;
+            _players.Clear();
+
+            backgroundImage.material.SetColor(_colorToGradient, Color.black);
+            backgroundImage.material.SetColor(_prevColorToGradient, Color.black);
+
+            ChangeShaderValues(Color.black, Color.black);
+
+            for (int i = 1; i < numberOfPlayers + 1; i++)
             {
-                teams.Add(_players[i].Team);
+                _players.Add(new Player(Constants.Player + i, (Enums.Team)i, (Enums.GameStates)i, data.TeamsColorList[i - 1]));
+                playerBotToggles[i - 1].gameObject.SetActive(true);
             }
 
-            _playerBotToggles[i].gameObject.SetActive(false);
+            randomPlayerButton.gameObject.SetActive(true);
         }
 
-        EventAggregator.Post(this, new AddBots { teams = teams });
-        EventAggregator.Post(this, new GetTurn { gameState = GameState });
-
-        _currentPlayerIndex = _players.FindIndex(player => player.GameState == GameState);
-
-        _randomPlayerButton.gameObject.SetActive(false);
-        _restartButton.gameObject.SetActive(true);
-
-        ChangeShaderValues(Color.black, _players[_currentPlayerIndex].TeamColor);
-    }
-
-    private void ChangeTurn(object arg1, NextTurn turnData)
-    {
-        if (GameState != GameStates.WIN)
+        private void RandomStartingPlayer()
         {
-            ChangeTurnToNextPlayer();
-        }
-    }
+            var numberOfPlayers = gameManager.NumberOfPlayer;
+            gameState = (Enums.GameStates)Random.Range(1, numberOfPlayers + 1);
 
-    private void PLost(object arg1, PlayerLost data)
-    {
-        int currentPlayerIndex = _players.FindIndex(player => player.Name == data.PlayerName);
-        if (currentPlayerIndex != -1)
+            EventAggregator.Subscribe<NextTurn>(ChangeTurn);
+            EventAggregator.Subscribe<PlayerLost>(PLost);
+
+            List<Enums.Team> teams = new();
+
+            for (int i = 0; i < numberOfPlayers; i++)
+            {
+                if (playerBotToggles[i].isOn)
+                {
+                    teams.Add(_players[i].Team);
+                }
+
+                playerBotToggles[i].gameObject.SetActive(false);
+            }
+
+            EventAggregator.Post(this, new AddBots { Teams = teams });
+            EventAggregator.Post(this, new GetTurn { GameState = gameState });
+
+            _currentPlayerIndex = _players.FindIndex(player => player.GameState == gameState);
+
+            randomPlayerButton.gameObject.SetActive(false);
+            restartButton.gameObject.SetActive(true);
+
+            ChangeShaderValues(Color.black, _players[_currentPlayerIndex].TeamColor);
+        }
+
+        private void ChangeTurn(object arg1, NextTurn turnData)
         {
-            _prevPlayerColor = _players[currentPlayerIndex].TeamColor;
-            _players.RemoveAt(currentPlayerIndex);
+            if (gameState != Enums.GameStates.Win)
+            {
+                ChangeTurnToNextPlayer();
+            }
         }
 
-        if (_players.Count <= 1)
+        private void PLost(object arg1, PlayerLost data)
         {
-            GameState = GameStates.WIN;
-            _winPanel.SetActive(true);
-            Color teamColor = _players[0].TeamColor;
-            _winText.text = " WINNER: " + _players[0].Name;
-            _winText.color = teamColor;
+            var currentPlayerIndex = _players.FindIndex(player => player.Name == data.PlayerName);
+            if (currentPlayerIndex != -1)
+            {
+                _prevPlayerColor = _players[currentPlayerIndex].TeamColor;
+                _players.RemoveAt(currentPlayerIndex);
+            }
+
+            if (_players.Count <= 1)
+            {
+                gameState = Enums.GameStates.Win;
+                winPanel.SetActive(true);
+                Color teamColor = _players[0].TeamColor;
+                winText.text = " WINNER: " + _players[0].Name;
+                winText.color = teamColor;
+            }
         }
-    }
 
-    private void ChangeTurnToNextPlayer()
-    {
-        int nextPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
-
-        while (nextPlayerIndex == _currentPlayerIndex)
+        private void ChangeTurnToNextPlayer()
         {
-            nextPlayerIndex = (nextPlayerIndex + 1) % _players.Count;
+            int nextPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
+
+            while (nextPlayerIndex == _currentPlayerIndex)
+            {
+                nextPlayerIndex = (nextPlayerIndex + 1) % _players.Count;
+            }
+
+            if (_currentPlayerIndex < _players.Count) _prevPlayerColor = _players[_currentPlayerIndex].TeamColor;
+            ChangeShaderValues(_prevPlayerColor, _players[nextPlayerIndex].TeamColor);
+
+            _currentPlayerIndex = nextPlayerIndex;
+            gameState = _players[_currentPlayerIndex].GameState;
+
+            EventAggregator.Post(this, new GetTurn { GameState = gameState });
         }
 
-        if (_currentPlayerIndex < _players.Count) _prevPlayerColor = _players[_currentPlayerIndex].TeamColor;
-        ChangeShaderValues(_prevPlayerColor, _players[nextPlayerIndex].TeamColor);
-
-        _currentPlayerIndex = nextPlayerIndex;
-        GameState = _players[_currentPlayerIndex].GameState;
-
-        EventAggregator.Post(this, new GetTurn { gameState = GameState });
+        private void ChangeShaderValues(Color previousColor, Color nextColor)
+        {
+            backgroundImage.material.SetFloat(_startTime, Time.time);
+            backgroundImage.material.SetColor(_prevColorToGradient, previousColor);
+            backgroundImage.material.SetColor(_colorToGradient, nextColor);
+        }
     }
 
-    private void ChangeShaderValues(Color previousColor, Color nextColor)
+    public struct Player
     {
-        _backgroundImage.material.SetFloat("_startTime", Time.time);
-        _backgroundImage.material.SetColor("_prevColorToGradient", previousColor);
-        _backgroundImage.material.SetColor("_colorToGradient", nextColor);
-    }
-}
+        public readonly string Name;
+        public readonly Enums.Team Team;
+        public readonly Enums.GameStates GameState;
+        public Color TeamColor;
 
-public struct Player
-{
-    public string Name;
-    public Team Team;
-    public GameStates GameState;
-    public Color TeamColor;
-
-    public Player(string name, Team team, GameStates gameState, Color color) : this()
-    {
-        Name = name;
-        Team = team;
-        GameState = gameState;
-        TeamColor = color;
+        public Player(string name, Enums.Team team, Enums.GameStates gameState, Color color) : this()
+        {
+            Name = name;
+            Team = team;
+            GameState = gameState;
+            TeamColor = color;
+        }
     }
 }

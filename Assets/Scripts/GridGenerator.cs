@@ -1,45 +1,35 @@
+using Cell;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GridGenerator : MonoBehaviour
 {
-    [SerializeField] private GameObject _cellPrefab;
-    [SerializeField] private GameManagerScript _gameManager;
+    [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private GridLayoutGroup gridLayout;
+    [SerializeField] private GameObject targetGameObject;
+    [SerializeField] private RectTransform containerRect;
 
-    [SerializeField] private GameObject _targetGameObject;
-
-    [SerializeField] private GridLayoutGroup _gridLayout;
-    [SerializeField] private RectTransform _containerRect;
-
-    public void GenerateGrid(int rows, int collumns)
+    public void GenerateGrid(int rows, int columns)
     {
         rows = Mathf.Max(rows, 3);
-        collumns = Mathf.Max(collumns, 3);
+        columns = Mathf.Max(columns, 3);
 
         ClearGrid();
+        
+        var rect = containerRect.rect;
+        float cellSize = Mathf.Min(rect.width / rows, rect.height / columns);
 
-        // Calculate the size of each cell based on the smaller dimension of the container
-        float cellSize = Mathf.Min(_containerRect.rect.width / rows, _containerRect.rect.height / collumns);
-
-        // Limit the cell size to a maximum of 1000x1000
         cellSize = Mathf.Min(cellSize, 1000);
-
-        // Calculate the number of cells and spacing
-        int cellCount = rows * collumns;
-
-        // Adjust the cell size in the GridLayoutGroup
-        _gridLayout.cellSize = new Vector2(cellSize, cellSize);
-
-        // Calculate the total size of the grid
+        int cellCount = rows * columns;
+        gridLayout.cellSize = new Vector2(cellSize, cellSize);
+        
         float gridSizeXTotal = cellSize * rows;
-        float gridSizeYTotal = cellSize * collumns;
+        float gridSizeYTotal = cellSize * columns;
 
-        // Adjust the size of the grid container
-        _containerRect.sizeDelta = new Vector2(gridSizeXTotal, gridSizeYTotal);
+        containerRect.sizeDelta = new Vector2(gridSizeXTotal, gridSizeYTotal);
 
-        for (int i = 0; i < cellCount; i++)
-        {
-            GameObject cell = Instantiate(_cellPrefab, transform);
+        for (int i = 0; i < cellCount; i++) {
+            GameObject cell = Instantiate(cellPrefab, transform);
 
             RectTransform cellRect = cell.GetComponent<RectTransform>();
             int row = i / rows;
@@ -50,17 +40,13 @@ public class GridGenerator : MonoBehaviour
             cell.GetComponent<CellInstance>().CreateCellInstance(row, column);
         }
 
-        // Adjust the size of the target GameObject to match the _gridLayout size + 10 pixels
-        float targetWidth = gridSizeXTotal + 40;
-        float targetHeight = gridSizeYTotal + 40;
-        _targetGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
+        var targetWidth = gridSizeXTotal + 40;
+        var targetHeight = gridSizeYTotal + 40;
+        targetGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
     }
 
-    private void ClearGrid()
-    {
-        // Destroy all existing cells
-        foreach (Transform child in transform)
-        {
+    private void ClearGrid() {
+        foreach (Transform child in transform) {
             Destroy(child.gameObject);
         }
     }

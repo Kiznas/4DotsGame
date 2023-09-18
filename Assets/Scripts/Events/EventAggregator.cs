@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EventHandler
+namespace Events
 {
     public static class EventAggregator
     {
@@ -32,13 +32,14 @@ namespace EventHandler
     }
 
     //EVENTS//
-    public class UpdateImages { };
-    public class CellAdded { public Cell Cell; }
-    public class NextTurn { public Team cellTeam; }
-    public class AddBots { public List<Team> teams; }
-    public class AddToNearbyCells { public Cell cell; }
+    public class CellAdded { public Cell.Cell Cell; }
+    public class NextTurn {
+        public Enums.Team CellTeam { get; set; }
+    }
+    public class AddBots { public List<Enums.Team> Teams; }
+    public class AddToNearbyCells { public Cell.Cell Cell; }
     public class PlayerLost { public string PlayerName; }
-    public class GetTurn { public GameStates gameState; }
-    public class PrepareForNextTurn { public Team cellTeam; }
-    public class Initialization { public Color[] teamsColorList; }
+    public class GetTurn { public Enums.GameStates GameState; }
+    public class PrepareForNextTurn { public Enums.Team CellTeam; }
+    public class Initialization { public Color[] TeamsColorList; }
 }
