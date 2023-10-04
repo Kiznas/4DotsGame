@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
-    public class GameManagerUI : MonoBehaviour
+    public class UIManager : MonoBehaviour
     {
         [Header("Buttons/Sliders/InputFields")]
         [SerializeField] private Button initializeButton;
@@ -39,7 +39,7 @@ namespace UI
             background.SetActive(true);
             initializeButton.gameObject.SetActive(false);
             playersNumberSlider.gameObject.SetActive(false);
-            inputFields.gameObject.SetActive(false);
+            inputFields.customGridButton.gameObject.SetActive(false);
             gridSetting.SetActive(false);
         }
     }

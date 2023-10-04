@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Constants;
 using Events;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Cell
+namespace CellLogic
 {
     public class CellInstance : MonoBehaviour
     {
@@ -18,8 +19,6 @@ namespace Cell
 
         private Cell _cell;
         private bool _teamTurn;
-        private static readonly int IsGlowing = Shader.PropertyToID("_IsGlowing");
-        private static readonly int CurrentTime = Shader.PropertyToID("_Current_Time");
 
         private void Start()
         {
@@ -32,10 +31,6 @@ namespace Cell
             EventAggregator.Unsubscribe<GetTurn>(SetTurn);
             EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
             EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
-            if (_cell != null && _cell.Material != null)
-            {
-                _cell.Material.SetInt(IsGlowing, 0);
-            }
         }
         public void CreateCellInstance(int row, int column)
         {
@@ -56,7 +51,6 @@ namespace Cell
             if (team.CellTeam == _cell.CellTeam)
             {
                 _teamTurn = false;
-                _cell.Material.SetInt(IsGlowing, 0);
             }
         }
 
@@ -64,11 +58,9 @@ namespace Cell
         {
             if (_cell.CellTeam != Enums.Team.None)
             {
-                var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
-                if (turn.GameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
+                var reversed = Constants.Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
+                if (turn.GameState == Constants.Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
                 {
-                    _cell.Material.SetInt(IsGlowing, 1);
-                    _cell.Material.SetFloat(CurrentTime, Time.time);
                     _teamTurn = true;
                 }
             }
@@ -86,13 +78,13 @@ namespace Cell
 
         private IEnumerator NextTurnWithDelay()
         {
-            yield return new WaitForSeconds(Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
             EventAggregator.Post(this, new NextTurn { CellTeam = _cell.CellTeam });
         }
 
         public IEnumerator AddToNearby()
         {
-            yield return new WaitForSeconds(Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
 
             StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
             EventAggregator.Post(this, new AddToNearbyCells { Cell = _cell });
@@ -102,7 +94,7 @@ namespace Cell
         {
             if (withDelay)
             {
-                yield return new WaitForSeconds(Constants.SpeedOfGame);
+                yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
             }
 
             var o = gameObject;

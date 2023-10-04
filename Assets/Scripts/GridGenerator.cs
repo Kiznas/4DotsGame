@@ -1,4 +1,4 @@
-using Cell;
+using CellLogic;
 using UnityEngine;
 using UnityEngine.UI;
 

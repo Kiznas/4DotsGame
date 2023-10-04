@@ -1,12 +1,10 @@
-using System.Threading.Tasks;
+using Constants;
 using UnityEngine;
 
-namespace Cell
+namespace CellLogic
 {
     public class Cell
     {
-        private (Cell, Cell, Cell, Cell) _neighbours;
-
         public int PosRow { get; }
         public int PosColumn { get; }
         public int NumberOfDots { get; private set; }
@@ -15,17 +13,14 @@ namespace Cell
         public Material Material { get; private set; }
         public CellInstance CellInstance { get; }
 
-        public (Cell top, Cell right, Cell bottom, Cell left) Neighbours
-        {
-            get => _neighbours;
-            set => _neighbours = value;
-        }
+        public Cell[] Neighbours { get; set; }
 
         public Cell(int posX, int posY, CellInstance cellInstance)
         {
             PosRow = posX;
             PosColumn = posY;
             CellInstance = cellInstance;
+            Neighbours = new Cell[4];
         }
 
         public void AddDot()
@@ -57,18 +52,11 @@ namespace Cell
             CellInstance.imageCombiner.ClearImage((Texture2D)CellInstance.image.mainTexture);
         }
 
-        private void UpdateImage()
+        public void UpdateImage()
         {
             if (NumberOfDots != 0 && CellTeam != Enums.Team.None)
             {
                 CellInstance.imageCombiner.CombineImages(NumberOfDots, Neighbours, CellTeam);
-            }
-        }
-        public async Task UpdateImageAsync()
-        {
-            if (NumberOfDots != 0 && CellTeam != Enums.Team.None)
-            {
-                await CellInstance.imageCombiner.CombineImagesAsync(NumberOfDots, Neighbours, CellTeam);
             }
         }
     }

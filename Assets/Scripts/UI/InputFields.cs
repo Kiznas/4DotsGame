@@ -6,7 +6,7 @@ namespace UI
 {
     public class InputFields : MonoBehaviour
     {
-        [SerializeField] private Button customGridButton;
+        [SerializeField] public Button customGridButton;
         [SerializeField] private TMP_InputField gridSizeInput;
         [SerializeField] private TMP_InputField rowInput;
         [SerializeField] private TMP_InputField columnInput;
@@ -30,22 +30,22 @@ namespace UI
     
         private void CustomGridSettings()
         {
-            if (customGridButton.CompareTag(Constants.Regular)) {
+            if (customGridButton.CompareTag(Constants.Constants.Regular)) {
                 gridSizeInput.gameObject.SetActive(false);
                 customInputFields.SetActive(true);
-                customGridButton.tag = Constants.Custom;
-                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Regular;
+                customGridButton.tag = Constants.Constants.Custom;
+                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Constants.Regular;
             }
-            else if (customGridButton.CompareTag(Constants.Custom)) {
+            else if (customGridButton.CompareTag(Constants.Constants.Custom)) {
                 gridSizeInput.gameObject.SetActive(true);
                 customInputFields.SetActive(false);
-                customGridButton.tag = Constants.Regular;
-                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Custom;
+                customGridButton.tag = Constants.Constants.Regular;
+                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Constants.Custom;
             }
         }
     
         public (int, int) GetCurrentMode() => 
-            customGridButton.CompareTag(Constants.Regular) ? 
+            customGridButton.CompareTag(Constants.Constants.Regular) ? 
                 (int.Parse(gridSizeInput.text), int.Parse(gridSizeInput.text)) :
                 (int.Parse(rowInput.text), int.Parse(columnInput.text));
     
