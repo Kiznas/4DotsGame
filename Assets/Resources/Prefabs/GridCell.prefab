@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 7863294049226783903}
   - component: {fileID: 3088496618525568836}
   - component: {fileID: 4711934269848108863}
-  - component: {fileID: 4791724170442735311}
   m_Layer: 5
   m_Name: GridCell
   m_TagString: Untagged
@@ -137,27 +136,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   button: {fileID: 3088496618525568836}
   particle: {fileID: 7970982589010328193, guid: d5be1a7c584845447a7ab102cde6ebb7, type: 3}
-  imageCombiner: {fileID: 4791724170442735311}
-  image: {fileID: 7863294049226783903}
---- !u!114 &4791724170442735311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 595247597330674638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83dd8f2125a023f4c8ebce98b06b4731, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sourceImages:
-  - {fileID: 2800000, guid: c950164719ad9e3498719048a55559ef, type: 3}
-  - {fileID: 2800000, guid: 57b55cd13e72dcd4a8980fafad6e66ef, type: 3}
-  - {fileID: 2800000, guid: 765e1ca6cd6be2541b010c33a54d5007, type: 3}
-  - {fileID: 2800000, guid: db36a1d579009674c9bc72850c4281e1, type: 3}
-  - {fileID: 2800000, guid: b6934432cc0c74648bd6e66570609ef6, type: 3}
-  - {fileID: 2800000, guid: 74a638b2aac0e89489930eb2d0171afe, type: 3}
-  - {fileID: 2800000, guid: 46a89e1dbd8223c4e8ac08e0265b09af, type: 3}
-  - {fileID: 2800000, guid: 76d481be3466b53449a28c0c2f264551, type: 3}
   image: {fileID: 7863294049226783903}

@@ -3,7 +3,7 @@ using CellLogic;
 using Constants;
 using UnityEngine;
 
-namespace Game_Managing
+namespace Game_Managing.Initialization
 {
     public static class InitializeCells
     {

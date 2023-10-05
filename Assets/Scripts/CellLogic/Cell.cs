@@ -49,14 +49,14 @@ namespace CellLogic
             CellTeam = Enums.Team.None;
             TeamColor = Color.white;
             NumberOfDots = 0;
-            CellInstance.imageCombiner.ClearImage((Texture2D)CellInstance.image.mainTexture);
+            CellInstance.ClearImage((Texture2D)CellInstance.image.mainTexture);
         }
 
         public void UpdateImage()
         {
             if (NumberOfDots != 0 && CellTeam != Enums.Team.None)
             {
-                CellInstance.imageCombiner.CombineImages(NumberOfDots, Neighbours, CellTeam);
+                CellInstance.CreateImage(NumberOfDots, Neighbours, CellTeam);
             }
         }
     }

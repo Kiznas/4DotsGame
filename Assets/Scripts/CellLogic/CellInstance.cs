@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Constants;
 using Events;
+using Game_Managing;
 using UnityEngine;
 using UnityEngine.UI;
+using Utilities;
 
 namespace CellLogic
 {
@@ -12,7 +14,6 @@ namespace CellLogic
     {
         [SerializeField] private Button button;
         [SerializeField] private ParticleSystem particle;
-        public ImageCombiner imageCombiner;
         public Image image;
 
         private List<Enums.Team> _botTeams;
@@ -103,6 +104,16 @@ namespace CellLogic
             particleMain.startColor = teamColor;
             Destroy(system.gameObject, 3f);
             yield return null;
+        }
+
+        internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam)
+        {
+            image.sprite = GameManage.Instance.ImageCombiner.CombineImages(numberOfDots, neighbours, cellTeam);
+        }
+
+        internal void ClearImage(Texture2D imageMainTexture)
+        {
+            image.sprite = ImageCombine.ClearImage(imageMainTexture);
         }
     }
 }

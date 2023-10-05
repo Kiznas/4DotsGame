@@ -49,23 +49,23 @@ namespace Game_Managing.Initialization
             }
 
             _startButton.gameObject.SetActive(true);
+            
+            new PlayersTurnSystem(_backgroundImage, _winPanel, _winText, _players);
         }
 
         private void RandomStartingPlayer()
         {
-            var numberOfPlayers = _gameManager.NumberOfPlayer;
-            new PlayersTurnSystem(_backgroundImage, _winPanel, _winText, _players)
-            {
-                GameState = (Enums.GameStates)Random.Range(1, numberOfPlayers + 1)
-            };
-
             List<Enums.Team> teams = new();
-            InitializeToggles(numberOfPlayers, teams);
+            InitializeToggles(_players.Count, teams);
             
             EventAggregator.Post(this, new AddBots { Teams = teams });
+            EventAggregator.Post(this, new NextTurn { CellTeam = (Enums.Team)RandomizeStartingPlayer() });
             
             ChangeActiveButtons();
         }
+
+        private int RandomizeStartingPlayer() =>
+            Random.Range(1, _players.Count);
 
         private void ChangeActiveButtons()
         {

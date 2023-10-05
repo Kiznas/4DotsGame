@@ -1,23 +1,24 @@
+using UI;
+using TMPro;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BotScripts;
+using Utilities;
 using CellLogic;
 using Constants;
+using BotScripts;
+using UnityEngine;
+using System.Linq;
+using UnityEngine.UI;
+using Infrastructure;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Events;
 using Game_Managing.Initialization;
-using Infrastructure;
-using TMPro;
-using UI;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace Game_Managing
 {
     public class GameManage : MonoBehaviour, ICoroutineRunner
     {
-        [Header("Essentials")]
+        [Header("Essentials")] 
         [SerializeField] private GridGenerator gridGenerator;
         [SerializeField] private InputFields inputFields;
         [SerializeField] private UIManager uiManager ;
@@ -34,6 +35,10 @@ namespace Game_Managing
         [Header("Essentials")]
         [SerializeField] private GameObject winPanel;
         [SerializeField] private Image backgroundImage;
+        
+        public static GameManage Instance;
+
+        public ImageCombine ImageCombiner;
 
         public Cell[] Cells;
         private Queue<Cell> _cellQueue;
@@ -43,12 +48,27 @@ namespace Game_Managing
         private int _cellIndex;
         private bool _isProceeding;
         public int NumberOfPlayer { get; private set; }
+        
+        private void Awake()
+        {
+            // Ensure there's only one instance of GameManager
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject); // Keep this object alive between scenes if needed
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
 
         private void OnDestroy() {
             EventAggregator.Unsubscribe<CellAdded>(AddCellToArray);
             EventAggregator.Unsubscribe<AddToNearbyCells>(AddToNearbyCells);
         }
         public void InitializeComponents() {
+            ImageCombiner = new ImageCombine();
             int rowsSize, columnsSize;
             NumberOfPlayer = (int)uiManager.PlayersNumSlider.value;
 
@@ -66,7 +86,7 @@ namespace Game_Managing
             uiManager.TurnOnOffGameObjects();
 
             InitializeTurnSystem turnSystem = new InitializeTurnSystem(backgroundImage, winPanel, this, winText, playerBotToggles, restartButton, startButton, playersColors);
-            BotLogic bot = new BotLogic(this, this);
+            BotLogic bot = new BotLogic(this, this); 
         }
         
         private void AddCellToArray(object arg1, CellAdded cell)

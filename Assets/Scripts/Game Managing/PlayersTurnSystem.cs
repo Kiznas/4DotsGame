@@ -19,8 +19,9 @@ namespace Game_Managing
         
         private int _currentPlayerIndex;
         private Color _prevPlayerColor;
+        private Enums.GameStates _gameState;
 
-        public Enums.GameStates GameState;
+        public Enums.GameStates GameState => _gameState;
 
         public PlayersTurnSystem(Image backgroundImage, GameObject winPanel, TMP_Text winText, List<Player> players)
         {
@@ -28,21 +29,16 @@ namespace Game_Managing
             _backgroundImage = backgroundImage;
             _winPanel = winPanel;
             _winText = winText;
-            
-            _backgroundImage.material.SetColor(_colorToGradient, Color.black);
-            _backgroundImage.material.SetColor(_prevColorToGradient, Color.black);
 
             ChangeShaderValues(Color.black, Color.black);
             
             EventAggregator.Subscribe<NextTurn>(ChangeTurn);
             EventAggregator.Subscribe<PlayerLost>(PlayerLost);
-            
-            EventAggregator.Post(this, new GetTurn { GameState = GameState });
         }
 
         private void ChangeTurn(object arg1, NextTurn turnData)
         {
-            if (GameState != Enums.GameStates.Win)
+            if (_gameState != Enums.GameStates.Win)
             {
                 int nextPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
 
@@ -51,13 +47,14 @@ namespace Game_Managing
                     nextPlayerIndex = (nextPlayerIndex + 1) % _players.Count;
                 }
 
-                if (_currentPlayerIndex < _players.Count) _prevPlayerColor = _players[_currentPlayerIndex].TeamColor;
+                if (_currentPlayerIndex < _players.Count)
+                    _prevPlayerColor = _players[_currentPlayerIndex].TeamColor;
                 ChangeShaderValues(_prevPlayerColor, _players[nextPlayerIndex].TeamColor);
 
                 _currentPlayerIndex = nextPlayerIndex;
-                GameState = _players[_currentPlayerIndex].GameState;
+                _gameState = _players[_currentPlayerIndex].GameState;
 
-                EventAggregator.Post(this, new GetTurn { GameState = GameState });
+                EventAggregator.Post(this, new GetTurn { GameState = _gameState });
             }
         }
 
@@ -72,7 +69,7 @@ namespace Game_Managing
 
             if (_players.Count <= 1)
             {
-                GameState = Enums.GameStates.Win;
+                _gameState = Enums.GameStates.Win;
                 _winPanel.SetActive(true);
                 Color teamColor = _players[0].TeamColor;
                 _winText.text = " WINNER: " + _players[0].Name;

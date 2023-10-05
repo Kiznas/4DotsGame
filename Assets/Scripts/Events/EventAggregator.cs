@@ -30,8 +30,7 @@ namespace Events
             }
         }
     }
-
-    //EVENTS//
+    
     public class CellAdded { public CellLogic.Cell Cell; }
     public class NextTurn { public Enums.Team CellTeam { get; set; } }
     public class AddBots { public List<Enums.Team> Teams; }
