@@ -1,4 +1,4 @@
-﻿namespace Constants
+﻿namespace ConstantValues
 {
     public abstract class Enums
     {

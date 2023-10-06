@@ -1,28 +1,35 @@
-using Events;
-using Constants;
-using System.Linq;
-using UnityEngine;
-using Game_Managing;
-using Infrastructure;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using CellLogic;
+using ConstantValues;
+using Events;
+using Game_Managing.CellsManager;
+using Infrastructure;
+using UnityEngine;
 
 namespace BotScripts
 {
     public class BotLogic
-    { 
-        private readonly GameManage _gameManager;
+    {
+        private readonly CellManager _cellManager;
         private readonly ICoroutineRunner _coroutineRunner;
         private static readonly int IsGlowing = Shader.PropertyToID("_IsGlowing");
         
         private List<Enums.Team> _botTeams = new();
 
-        public BotLogic(GameManage gameManager, ICoroutineRunner coroutineRunner)
+        public BotLogic(ICoroutineRunner coroutineRunner, CellManager cellManager)
         {
-            _gameManager = gameManager;
+            _cellManager = cellManager;
             _coroutineRunner = coroutineRunner;
             EventAggregator.Subscribe<GetTurn>(OnGetTurn);
             EventAggregator.Subscribe<AddBots>(AddBotsToList);
+        }
+
+        public void Unsubscribe()
+        {
+            EventAggregator.Unsubscribe<GetTurn>(OnGetTurn);
+            EventAggregator.Unsubscribe<AddBots>(AddBotsToList);
         }
 
         private void AddBotsToList(object arg1, AddBots data)
@@ -32,7 +39,7 @@ namespace BotScripts
 
         private void OnGetTurn(object sender, GetTurn turnData)
         {
-            foreach (var botTeam in _botTeams.Where(botTeam => turnData.GameState == Constants.Constants.TeamsDictionary[botTeam]))
+            foreach (var botTeam in _botTeams.Where(botTeam => turnData.GameState == Constants.TeamsDictionary[botTeam]))
             {
                 _coroutineRunner.StartCoroutine(BotDelay(botTeam));
                 return;
@@ -41,17 +48,17 @@ namespace BotScripts
 
         private IEnumerator BotDelay(Enums.Team team)
         {
-            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
             TakeBotTurn(team);
         }
 
         private void TakeBotTurn(Enums.Team botTeam)
         {
-            var botCells = _gameManager.Cells
+            var botCells = _cellManager.Cells
                 .Where(cell => cell.CellTeam == botTeam)
                 .ToList();
 
-            var opponentCells = _gameManager.Cells
+            var opponentCells = _cellManager.Cells
                 .Where(cell => cell.CellTeam != botTeam && cell.CellTeam != Enums.Team.None)
                 .ToList();
 
@@ -69,9 +76,9 @@ namespace BotScripts
             }
         }
 
-        private void ProcessBotCellTurn(CellLogic.Cell botCell, Enums.Team botTeam)
+        private void ProcessBotCellTurn(Cell botCell, Enums.Team botTeam)
         {
-            _gameManager.Cells.FirstOrDefault(cell => cell.CellTeam == botTeam)?.Material.SetInt(IsGlowing, 0);
+            _cellManager.Cells.FirstOrDefault(cell => cell.CellTeam == botTeam)?.Material.SetInt(IsGlowing, 0);
 
             if (botCell.NumberOfDots != 3)
             {
@@ -83,7 +90,7 @@ namespace BotScripts
 
         private IEnumerator GiveNextTurn(Enums.Team team)
         {
-            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
             EventAggregator.Post(this, new NextTurn { CellTeam = team });
         }
     }

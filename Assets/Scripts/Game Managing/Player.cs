@@ -1,4 +1,4 @@
-﻿using Constants;
+﻿using ConstantValues;
 using UnityEngine;
 
 namespace Game_Managing

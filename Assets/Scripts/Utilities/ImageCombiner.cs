@@ -1,12 +1,13 @@
 using System.Collections.Generic;
-using Constants;
+using ConstantValues;
 using UnityEngine;
 
 namespace Utilities
 {
     public class ImageCombine
     {
-        private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>("Images");
+        private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>(Constants.Images);
+        private static readonly Sprite TransperentTexture = Resources.Load<Sprite>(Constants.Transperent);
 
         public Sprite CombineImages(int numberOfDots, CellLogic.Cell[] neighbours, Enums.Team team)
         {
@@ -48,23 +49,9 @@ namespace Utilities
             return Sprite.Create(combinedImage, new Rect(0, 0, width, height), Vector2.zero);
         }
 
-        public static Sprite ClearImage(Texture2D sourceImage)
+        public static Sprite ClearImage()
         {
-            Texture2D clearedImage = new(sourceImage.width, sourceImage.height);
-
-            for (int y = 0; y < clearedImage.height; y++)
-            {
-                for (int x = 0; x < clearedImage.width; x++)
-                {
-                    Color pixelColor = new Color(0, 0 , 0, 0);
-                    clearedImage.SetPixel(x, y, pixelColor);
-                }
-            }
-
-            clearedImage.Apply();
-
-            return Sprite.Create(clearedImage, new Rect(0, 0, clearedImage.width, clearedImage.height),
-                Vector2.zero);
+            return TransperentTexture;
         }
     }
 }

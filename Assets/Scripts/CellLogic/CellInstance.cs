@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Constants;
+using ConstantValues;
 using Events;
 using Game_Managing;
 using UnityEngine;
@@ -59,8 +59,8 @@ namespace CellLogic
         {
             if (_cell.CellTeam != Enums.Team.None)
             {
-                var reversed = Constants.Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
-                if (turn.GameState == Constants.Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
+                var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
+                if (turn.GameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
                 {
                     _teamTurn = true;
                 }
@@ -79,13 +79,13 @@ namespace CellLogic
 
         private IEnumerator NextTurnWithDelay()
         {
-            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
             EventAggregator.Post(this, new NextTurn { CellTeam = _cell.CellTeam });
         }
 
         public IEnumerator AddToNearby()
         {
-            yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
 
             StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
             EventAggregator.Post(this, new AddToNearbyCells { Cell = _cell });
@@ -95,7 +95,7 @@ namespace CellLogic
         {
             if (withDelay)
             {
-                yield return new WaitForSeconds(Constants.Constants.SpeedOfGame);
+                yield return new WaitForSeconds(Constants.SpeedOfGame);
             }
 
             var o = gameObject;
@@ -106,14 +106,10 @@ namespace CellLogic
             yield return null;
         }
 
-        internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam)
-        {
-            image.sprite = GameManage.Instance.ImageCombiner.CombineImages(numberOfDots, neighbours, cellTeam);
-        }
+        internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam) =>
+            image.sprite = Bootstrapper.Instance.ImageCombiner.CombineImages(numberOfDots, neighbours, cellTeam);
 
-        internal void ClearImage(Texture2D imageMainTexture)
-        {
-            image.sprite = ImageCombine.ClearImage(imageMainTexture);
-        }
+        internal void ClearImage(Texture2D imageMainTexture) =>
+            image.sprite = ImageCombine.ClearImage();
     }
 }

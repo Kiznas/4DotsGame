@@ -19,6 +19,8 @@ namespace UI
             gridSizeInput.onEndEdit.AddListener(delegate { MyValidate(gridSizeInput); });
             rowInput.onEndEdit.AddListener(delegate { MyValidate(rowInput); });
             columnInput.onEndEdit.AddListener(delegate { MyValidate(columnInput); });
+            Application.targetFrameRate = 144;
+            QualitySettings.vSyncCount = 0;
         }
 
         private void OnDestroy() {
@@ -30,22 +32,22 @@ namespace UI
     
         private void CustomGridSettings()
         {
-            if (customGridButton.CompareTag(Constants.Constants.Regular)) {
+            if (customGridButton.CompareTag(ConstantValues.Constants.Regular)) {
                 gridSizeInput.gameObject.SetActive(false);
                 customInputFields.SetActive(true);
-                customGridButton.tag = Constants.Constants.Custom;
-                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Constants.Regular;
+                customGridButton.tag = ConstantValues.Constants.Custom;
+                customGridButton.GetComponentInChildren<TMP_Text>().text = ConstantValues.Constants.Regular;
             }
-            else if (customGridButton.CompareTag(Constants.Constants.Custom)) {
+            else if (customGridButton.CompareTag(ConstantValues.Constants.Custom)) {
                 gridSizeInput.gameObject.SetActive(true);
                 customInputFields.SetActive(false);
-                customGridButton.tag = Constants.Constants.Regular;
-                customGridButton.GetComponentInChildren<TMP_Text>().text = Constants.Constants.Custom;
+                customGridButton.tag = ConstantValues.Constants.Regular;
+                customGridButton.GetComponentInChildren<TMP_Text>().text = ConstantValues.Constants.Custom;
             }
         }
     
         public (int, int) GetCurrentMode() => 
-            customGridButton.CompareTag(Constants.Constants.Regular) ? 
+            customGridButton.CompareTag(ConstantValues.Constants.Regular) ? 
                 (int.Parse(gridSizeInput.text), int.Parse(gridSizeInput.text)) :
                 (int.Parse(rowInput.text), int.Parse(columnInput.text));
     

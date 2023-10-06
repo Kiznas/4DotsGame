@@ -2808,7 +2808,7 @@ GameObject:
   - component: {fileID: 699660711}
   - component: {fileID: 699660710}
   m_Layer: 0
-  m_Name: Game Manager
+  m_Name: Game Scripts
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2829,11 +2829,8 @@ MonoBehaviour:
   gridGenerator: {fileID: 906745544}
   inputFields: {fileID: 699660711}
   uiManager: {fileID: 699660710}
-  playersMaterials:
-  - {fileID: 2100000, guid: d3ddc737bdaac6a40b6b1f1e4a4daed4, type: 2}
-  - {fileID: 2100000, guid: 5be3cbde2b2b7be41898ce50180eb311, type: 2}
-  - {fileID: 2100000, guid: 036de7056e6430c43ae7afb30d371baa, type: 2}
-  - {fileID: 2100000, guid: c4ed3551d2372d644bd37f4be7acbd0f, type: 2}
+  winPanel: {fileID: 961229882}
+  backgroundImage: {fileID: 349885269}
   playersColors:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 0.5, g: 1, b: 0, a: 1}
@@ -2847,8 +2844,6 @@ MonoBehaviour:
   - {fileID: 1301245060}
   - {fileID: 1973952472}
   winText: {fileID: 595168655}
-  winPanel: {fileID: 961229882}
-  backgroundImage: {fileID: 349885269}
 --- !u!4 &699660706
 Transform:
   m_ObjectHideFlags: 0

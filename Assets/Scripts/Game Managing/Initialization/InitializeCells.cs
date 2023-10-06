@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using CellLogic;
-using Constants;
+using ConstantValues;
 using UnityEngine;
 
 namespace Game_Managing.Initialization
