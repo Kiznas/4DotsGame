@@ -1950,7 +1950,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 0
-  orthographic size: 2.2265625
+  orthographic size: 2.2851562
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2826,16 +2826,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8005b7760f523e4d92fab45c1b40204, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridGenerator: {fileID: 906745544}
+  gridGameObject: {fileID: 906745538}
   inputFields: {fileID: 699660711}
   uiManager: {fileID: 699660710}
   winPanel: {fileID: 961229882}
   backgroundImage: {fileID: 349885269}
-  playersColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0.5, g: 1, b: 0, a: 1}
-  - {r: 0, g: 1, b: 1, a: 1}
-  - {r: 0.5, g: 0, b: 1, a: 1}
   startButton: {fileID: 2082580083}
   restartButton: {fileID: 653130639}
   playerBotToggles:
@@ -2958,7 +2953,6 @@ GameObject:
   - component: {fileID: 906745543}
   - component: {fileID: 906745542}
   - component: {fileID: 906745541}
-  - component: {fileID: 906745544}
   m_Layer: 5
   m_Name: Grid Creator
   m_TagString: Untagged
@@ -3048,19 +3042,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 906745538}
   m_CullTransparentMesh: 1
---- !u!114 &906745544
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 906745538}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15a2515b56b4deb46ad94d62c1ef9997, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  backgroundGameObject: {fileID: 349885267}
 --- !u!1 &907755488
 GameObject:
   m_ObjectHideFlags: 0

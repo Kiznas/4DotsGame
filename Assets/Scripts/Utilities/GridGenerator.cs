@@ -5,15 +5,22 @@ using UnityEngine.UI;
 
 namespace Utilities
 {
-    public class GridGenerator : MonoBehaviour
+    public class GridGenerator
     {
-        [SerializeField] private GameObject backgroundGameObject;
+        private readonly GameObject _backgroundGameObject;
+        private readonly GameObject _gridGameObject;
+
+        public GridGenerator(GameObject backgroundGameObject, GameObject gridGameObject)
+        {
+            _backgroundGameObject = backgroundGameObject;
+            _gridGameObject = gridGameObject;
+        }
 
         public void GenerateGrid(int rows, int columns)
         {
             var cellPrefab = Resources.Load<GameObject>(AssetsPath.CellPrefabPath);
-            var gridLayout = gameObject.GetComponent<GridLayoutGroup>();
-            var containerRect = gameObject.GetComponent<RectTransform>();
+            var gridLayout = _gridGameObject.GetComponent<GridLayoutGroup>();
+            var containerRect = _gridGameObject.GetComponent<RectTransform>();
             
             rows = Mathf.Max(rows, 3);
             columns = Mathf.Max(columns, 3);
@@ -33,7 +40,7 @@ namespace Utilities
             containerRect.sizeDelta = new Vector2(gridSizeXTotal, gridSizeYTotal);
 
             for (int i = 0; i < cellCount; i++) {
-                GameObject cell = Instantiate(cellPrefab, transform);
+                GameObject cell = Object.Instantiate(cellPrefab, _gridGameObject.transform, false);
 
                 RectTransform cellRect = cell.GetComponent<RectTransform>();
                 int row = i / rows;
@@ -46,12 +53,12 @@ namespace Utilities
 
             var targetWidth = gridSizeXTotal + 40;
             var targetHeight = gridSizeYTotal + 40;
-            backgroundGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
+            _backgroundGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
         }
 
         private void ClearGrid() {
-            foreach (Transform child in transform) {
-                Destroy(child.gameObject);
+            foreach (Transform child in _gridGameObject.transform) {
+                Object.Destroy(child.gameObject);
             }
         }
     }
