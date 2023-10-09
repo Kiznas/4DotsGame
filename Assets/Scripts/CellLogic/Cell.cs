@@ -49,7 +49,7 @@ namespace CellLogic
             CellTeam = Enums.Team.None;
             TeamColor = Color.white;
             NumberOfDots = 0;
-            CellInstance.ClearImage((Texture2D)CellInstance.image.mainTexture);
+            CellInstance.ClearImage();
         }
 
         public void UpdateImage()

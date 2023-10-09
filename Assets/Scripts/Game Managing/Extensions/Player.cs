@@ -1,7 +1,7 @@
 ﻿using ConstantValues;
 using UnityEngine;
 
-namespace Game_Managing
+namespace Game_Managing.Extensions
 {
     public struct Player
     {

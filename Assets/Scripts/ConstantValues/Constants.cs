@@ -9,9 +9,6 @@ namespace ConstantValues
         public const string Regular = "REGULAR GRID";
         public const string Custom = "CUSTOM GRID";
         public const string Player = "PLAYER";
-        public const string Materials = "Materials";
-        public const string Images = "Images/CellImages";
-        public const string Transperent = "Images/Transperent";
 
         public static readonly Dictionary<Enums.Team, Enums.GameStates> TeamsDictionary = new()
         {

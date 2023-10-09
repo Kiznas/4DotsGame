@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Assets;
 using ConstantValues;
 using UnityEngine;
 
@@ -6,8 +7,8 @@ namespace Utilities
 {
     public class ImageCombine
     {
-        private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>(Constants.Images);
-        private static readonly Sprite TransperentTexture = Resources.Load<Sprite>(Constants.Transperent);
+        private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>(AssetsPath.Images);
+        private static readonly Sprite TransparentTexture = Resources.Load<Sprite>(AssetsPath.Transparent);
 
         public Sprite CombineImages(int numberOfDots, CellLogic.Cell[] neighbours, Enums.Team team)
         {
@@ -51,7 +52,7 @@ namespace Utilities
 
         public static Sprite ClearImage()
         {
-            return TransperentTexture;
+            return TransparentTexture;
         }
     }
 }

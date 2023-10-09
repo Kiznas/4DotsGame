@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ConstantValues;
 using Events;
+using Game_Managing.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,6 +39,9 @@ namespace Game_Managing.Initialization
         private int _currentPlayerIndex;
         private Color _prevPlayerColor;
         private PlayersTurnSystem _playersTurnSystem;
+
+        public PlayersTurnSystem TurnSystem => _playersTurnSystem;
+
         private void InitializePlayers()
         {
             int numberOfPlayers = _gameManager.NumberOfPlayer;
@@ -45,7 +49,7 @@ namespace Game_Managing.Initialization
 
             for (int i = 1; i < numberOfPlayers + 1; i++)
             {
-                _players.Add(new Player(ConstantValues.Constants.Player + i, (Enums.Team)i, (Enums.GameStates)i, _colors[i - 1]));
+                _players.Add(new Player(Constants.Player + i, (Enums.Team)i, (Enums.GameStates)i, _colors[i - 1]));
                 _playerBotToggles[i - 1].gameObject.SetActive(true);
             }
 
@@ -85,12 +89,6 @@ namespace Game_Managing.Initialization
 
                 _playerBotToggles[i].gameObject.SetActive(false);
             }
-        }
-
-        public void Unsubscribe()
-        {
-            EventAggregator.Unsubscribe<NextTurn>(_playersTurnSystem.ChangeTurn);
-            EventAggregator.Unsubscribe<PlayerLost>(_playersTurnSystem.PlayerLost);
         }
     }
 }

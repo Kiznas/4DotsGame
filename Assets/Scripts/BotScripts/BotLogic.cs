@@ -1,16 +1,16 @@
+using Events;
+using CellLogic;
+using System.Linq;
+using UnityEngine;
+using ConstantValues;
+using Infrastructure;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using CellLogic;
-using ConstantValues;
-using Events;
 using Game_Managing.CellsManager;
-using Infrastructure;
-using UnityEngine;
 
 namespace BotScripts
 {
-    public class BotLogic
+    public class BotLogic : IEventsUser
     {
         private readonly CellManager _cellManager;
         private readonly ICoroutineRunner _coroutineRunner;
@@ -22,6 +22,10 @@ namespace BotScripts
         {
             _cellManager = cellManager;
             _coroutineRunner = coroutineRunner;
+        }
+
+        public void Subscribe()
+        {
             EventAggregator.Subscribe<GetTurn>(OnGetTurn);
             EventAggregator.Subscribe<AddBots>(AddBotsToList);
         }

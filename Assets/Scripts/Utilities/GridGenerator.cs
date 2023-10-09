@@ -9,16 +9,17 @@ namespace Utilities
     {
         private readonly GameObject _backgroundGameObject;
         private readonly GameObject _gridGameObject;
+        private readonly IAssetProvider _asset;
 
-        public GridGenerator(GameObject backgroundGameObject, GameObject gridGameObject)
+        public GridGenerator(GameObject backgroundGameObject, GameObject gridGameObject, IAssetProvider asset)
         {
             _backgroundGameObject = backgroundGameObject;
             _gridGameObject = gridGameObject;
+            _asset = asset;
         }
 
         public void GenerateGrid(int rows, int columns)
         {
-            var cellPrefab = Resources.Load<GameObject>(AssetsPath.CellPrefabPath);
             var gridLayout = _gridGameObject.GetComponent<GridLayoutGroup>();
             var containerRect = _gridGameObject.GetComponent<RectTransform>();
             
@@ -39,8 +40,9 @@ namespace Utilities
 
             containerRect.sizeDelta = new Vector2(gridSizeXTotal, gridSizeYTotal);
 
-            for (int i = 0; i < cellCount; i++) {
-                GameObject cell = Object.Instantiate(cellPrefab, _gridGameObject.transform, false);
+            for (int i = 0; i < cellCount; i++)
+            {
+                var cell = _asset.InstantiateWithParent(AssetsPath.CellPrefabPath, _gridGameObject.transform);
 
                 RectTransform cellRect = cell.GetComponent<RectTransform>();
                 int row = i / rows;

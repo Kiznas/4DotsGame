@@ -46,7 +46,7 @@ namespace UI
             }
         }
     
-        public (int, int) GetCurrentMode() => 
+        public (int, int) GetGridSize() => 
             customGridButton.CompareTag(ConstantValues.Constants.Regular) ? 
                 (int.Parse(gridSizeInput.text), int.Parse(gridSizeInput.text)) :
                 (int.Parse(rowInput.text), int.Parse(columnInput.text));

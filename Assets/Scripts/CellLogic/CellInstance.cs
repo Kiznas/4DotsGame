@@ -1,16 +1,16 @@
+using Events;
+using Utilities;
+using System.Linq;
+using UnityEngine;
+using Game_Managing;
+using ConstantValues;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using ConstantValues;
-using Events;
-using Game_Managing;
-using UnityEngine;
-using UnityEngine.UI;
-using Utilities;
 
 namespace CellLogic
 {
-    public class CellInstance : MonoBehaviour
+    public class CellInstance : MonoBehaviour, IEventsUser
     {
         [SerializeField] private Button button;
         [SerializeField] private ParticleSystem particle;
@@ -21,25 +21,32 @@ namespace CellLogic
         private Cell _cell;
         private bool _teamTurn;
 
-        private void Start()
+        public void Subscribe()
         {
-            button.onClick.AddListener(OnClick);
+            EventAggregator.Subscribe<GetTurn>(SetTurn);
+            EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
+            EventAggregator.Subscribe<AddBots>(AddBotsTeams);
+        }
+
+        public void Unsubscribe()
+        {
+            EventAggregator.Unsubscribe<GetTurn>(SetTurn);
+            EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
+            EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
         }
 
         private void OnDestroy()
         {
             button.onClick.RemoveAllListeners();
-            EventAggregator.Unsubscribe<GetTurn>(SetTurn);
-            EventAggregator.Unsubscribe<PrepareForNextTurn>(PrepareTurn);
-            EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
+            Unsubscribe();
         }
+
         public void CreateCellInstance(int row, int column)
         {
             _cell = new Cell(row, column, this);
+            button.onClick.AddListener(OnClick);
             EventAggregator.Post(this, new CellAdded { Cell = _cell });
-            EventAggregator.Subscribe<GetTurn>(SetTurn);
-            EventAggregator.Subscribe<PrepareForNextTurn>(PrepareTurn);
-            EventAggregator.Subscribe<AddBots>(AddBotsTeams);
+            Subscribe();
         }
 
         private void AddBotsTeams(object arg1, AddBots data)
@@ -109,7 +116,7 @@ namespace CellLogic
         internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam) =>
             image.sprite = Bootstrapper.Instance.ImageCombiner.CombineImages(numberOfDots, neighbours, cellTeam);
 
-        internal void ClearImage(Texture2D imageMainTexture) =>
+        internal void ClearImage() =>
             image.sprite = ImageCombine.ClearImage();
     }
 }

@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using ConstantValues;
 using Events;
+using Game_Managing.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game_Managing
 {
-    public class PlayersTurnSystem
+    public class PlayersTurnSystem : IEventsUser
     {
         private readonly int _colorToGradient = Shader.PropertyToID("_colorToGradient");
         private readonly int _prevColorToGradient = Shader.PropertyToID("_prevColorToGradient");
@@ -21,8 +22,6 @@ namespace Game_Managing
         private Color _prevPlayerColor;
         private Enums.GameStates _gameState;
 
-        public Enums.GameStates GameState => _gameState;
-
         public PlayersTurnSystem(Image backgroundImage, GameObject winPanel, TMP_Text winText, List<Player> players)
         {
             _players = players;
@@ -31,9 +30,18 @@ namespace Game_Managing
             _winText = winText;
 
             ChangeShaderValues(Color.black, Color.black);
-            
+        }
+
+        public void Subscribe()
+        {
             EventAggregator.Subscribe<NextTurn>(ChangeTurn);
             EventAggregator.Subscribe<PlayerLost>(PlayerLost);
+        }
+
+        public void Unsubscribe()
+        {
+            EventAggregator.Unsubscribe<NextTurn>(ChangeTurn);
+            EventAggregator.Unsubscribe<PlayerLost>(PlayerLost);
         }
 
         internal void ChangeTurn(object arg1, NextTurn turnData)

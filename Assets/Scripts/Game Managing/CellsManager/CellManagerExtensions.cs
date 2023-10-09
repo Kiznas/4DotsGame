@@ -14,7 +14,7 @@ namespace Game_Managing.CellsManager
             var aliveTeams = new HashSet<Enums.Team>(cells.Select(cell => cell.CellTeam));
             foreach (var lostTeam in previouslyAliveTeams.Except(aliveTeams))
             {
-                var playerName = ConstantValues.Constants.Player + (int)lostTeam;
+                var playerName = Constants.Player + (int)lostTeam;
                 EventAggregator.Post(cellManager, new PlayerLost { PlayerName = playerName });
             }
 
