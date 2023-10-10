@@ -7,6 +7,7 @@ using ConstantValues;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using Events.EventsManager;
 
 namespace CellLogic
 {
@@ -101,9 +102,7 @@ namespace CellLogic
         private IEnumerator SpreadAnimation(bool withDelay, Color teamColor)
         {
             if (withDelay)
-            {
                 yield return new WaitForSeconds(Constants.SpeedOfGame);
-            }
 
             var o = gameObject;
             var system = Instantiate(particle, o.transform.position, o.transform.rotation, o.transform);

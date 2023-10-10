@@ -46,8 +46,7 @@ namespace Game_Managing.CellsManager
                 var cells = new List<Cell> { cell };
                 cells.AddRange(cell.Neighbours.Where(neighbour => neighbour != null));
 
-                foreach (var item in cells.Where(item =>
-                             item != null && !stackToChange.Contains(item)))
+                foreach (var item in cells.Where(item => item != null && !stackToChange.Contains(item)))
                     stackToChange.Push(item);
             }
         }

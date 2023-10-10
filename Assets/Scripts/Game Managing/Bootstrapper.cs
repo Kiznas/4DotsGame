@@ -17,13 +17,13 @@ namespace Game_Managing
     public class Bootstrapper : MonoBehaviour, ICoroutineRunner
     {
         [Header("Essentials")] 
-        [SerializeField] private GameObject gridGameObject;
         [SerializeField] private GameObject winPanel;
         [SerializeField] private Image backgroundImage;
+        [SerializeField] private GameObject gridGameObject;
         [Header("UI Elements")]
+        [SerializeField] private TMP_Text winText;
         [SerializeField] private Button startButton;
         [SerializeField] private Button restartButton; 
-        [SerializeField] private TMP_Text winText;
         [SerializeField] private Toggle[] playerBotToggles;
         
         public static Bootstrapper Instance;
@@ -60,26 +60,49 @@ namespace Game_Managing
             _services.RegisterSingle<IEventsManager>(new EventsManager());
             
             var playersMaterials = Resources.LoadAll<Material>(AssetsPath.Materials);
-            int rowsSize, columnsSize;
-            NumberOfPlayer = (int)_uiManager.PlayersNumSlider.value;
-            (rowsSize, columnsSize) = _inputFields.GetGridSize();
             
+            var (rowsSize, columnsSize) = GetGridSize();
+            NumberOfPlayer = (int)_uiManager.PlayersNumSlider.value;
+            
+            var cells = RegisterCells(rowsSize, columnsSize);
+
+            InitializeGrid(rowsSize, columnsSize, cells, playersMaterials);
+
+            InitializeAndRegisterEssentials();
+
+            _uiManager.TurnOffUnneededUI();
+        }
+
+        private void InitializeAndRegisterEssentials()
+        {
+            _turnSystem = new InitializeTurnSystem(backgroundImage, winPanel, this, winText, playerBotToggles, restartButton,
+                startButton, _playersColors);
+            _bot = new BotLogic(this, _cellsManager);
+            _services.Single<IEventsManager>().RegisterObject(_bot);
+            _services.Single<IEventsManager>().RegisterObject(_turnSystem.TurnSystem);
+        }
+
+        private void InitializeGrid(int rowsSize, int columnsSize, Cell[] cells, Material[] playersMaterials)
+        {
+            GridGenerator gridGenerator = new GridGenerator(backgroundImage.gameObject, gridGameObject, _services.Single<IAssetProvider>());
+            gridGenerator.GenerateGrid(rowsSize, columnsSize);
+            InitializeCells.AddCells(rowsSize, columnsSize, NumberOfPlayer, cells, Extensions.Utilities.RandomizePlayersColors(out _playersColors), playersMaterials);
+        }
+
+        private Cell[] RegisterCells(int rowsSize, int columnsSize)
+        {
             var cells = new Cell[rowsSize * columnsSize];
             _cellsManager = new CellManager(cells);
             _services.Single<IEventsManager>().RegisterObject(_cellsManager);
+            return cells;
+        }
 
-            GridGenerator gridGenerator = new GridGenerator(backgroundImage.gameObject, gridGameObject, _services.Single<IAssetProvider>());
-            gridGenerator.GenerateGrid(rowsSize, columnsSize);
-            
-            InitializeCells.AddCells(rowsSize, columnsSize, NumberOfPlayer, cells, Extensions.Utilities.RandomizePlayersColors(out _playersColors), playersMaterials);
-            
-            _turnSystem = new InitializeTurnSystem(backgroundImage, winPanel, this, winText, playerBotToggles, restartButton, startButton, _playersColors);
-            _bot = new BotLogic(this, _cellsManager); 
-            
-            _services.Single<IEventsManager>().RegisterObject(_bot);
-            _services.Single<IEventsManager>().RegisterObject(_turnSystem.TurnSystem);
-            
-            _uiManager.TurnOffUnneededUI();
+        private (int, int) GetGridSize()
+        {
+            int rowsSize;
+            int columnsSize;
+            (rowsSize, columnsSize) = _inputFields.GetGridSize();
+            return (rowsSize, columnsSize);
         }
     }
 }

@@ -38,9 +38,8 @@ namespace Game_Managing.Initialization
         private readonly List<Player> _players;
         private int _currentPlayerIndex;
         private Color _prevPlayerColor;
-        private PlayersTurnSystem _playersTurnSystem;
 
-        public PlayersTurnSystem TurnSystem => _playersTurnSystem;
+        public PlayersTurnSystem TurnSystem { get; private set; }
 
         private void InitializePlayers()
         {
@@ -55,7 +54,7 @@ namespace Game_Managing.Initialization
 
             _startButton.gameObject.SetActive(true);
             
-            _playersTurnSystem = new PlayersTurnSystem(_backgroundImage, _winPanel, _winText, _players);
+            TurnSystem = new PlayersTurnSystem(_backgroundImage, _winPanel, _winText, _players);
         }
 
         private void RandomStartingPlayer()

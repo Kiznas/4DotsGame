@@ -27,20 +27,16 @@ namespace Utilities
             columns = Mathf.Max(columns, 3);
 
             ClearGrid();
-        
+
             var rect = containerRect.rect;
             float cellSize = Mathf.Min(rect.width / rows, rect.height / columns);
 
-            cellSize = Mathf.Min(cellSize, 1000);
+            cellSize = Mathf.Min(cellSize, 1200);
             int cellCount = rows * columns;
             gridLayout.cellSize = new Vector2(cellSize, cellSize);
         
-            float gridSizeXTotal = cellSize * rows;
-            float gridSizeYTotal = cellSize * columns;
 
-            containerRect.sizeDelta = new Vector2(gridSizeXTotal, gridSizeYTotal);
-
-            for (int i = 0; i < cellCount; i++)
+            for (int i = 0; i < cellCount; i++) 
             {
                 var cell = _asset.InstantiateWithParent(AssetsPath.CellPrefabPath, _gridGameObject.transform);
 
@@ -53,8 +49,8 @@ namespace Utilities
                 cell.GetComponent<CellInstance>().CreateCellInstance(row, column);
             }
 
-            var targetWidth = gridSizeXTotal + 40;
-            var targetHeight = gridSizeYTotal + 40;
+            var targetWidth = rect.width + 40;
+            var targetHeight = rect.width + 40;
             _backgroundGameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(targetWidth, targetHeight);
         }
 

@@ -40,8 +40,7 @@ namespace BotScripts
             return null;
         }
 
-        public static Cell FindClosestBotCellToOpponentCell(List<Cell> botCells,
-            List<Cell> opponentCells)
+        public static Cell FindClosestBotCellToOpponentCell(List<Cell> botCells, List<Cell> opponentCells)
         {
             Cell closestBotCell = null;
             float shortestDistance = float.MaxValue;

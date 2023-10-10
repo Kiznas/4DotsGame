@@ -11,10 +11,9 @@
         public TService Single<TService>() where TService : IService =>
             Implementation<TService>.ServiceInstance;
 
-        private class Implementation<TService> where TService : IService
+        private class Implementation<TService> where TService : IService 
         {
             public static TService ServiceInstance;
         }
-
     }
 }

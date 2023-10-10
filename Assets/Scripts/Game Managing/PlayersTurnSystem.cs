@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ConstantValues;
 using Events;
+using Events.EventsManager;
 using Game_Managing.Extensions;
 using TMPro;
 using UnityEngine;
@@ -44,7 +45,7 @@ namespace Game_Managing
             EventAggregator.Unsubscribe<PlayerLost>(PlayerLost);
         }
 
-        internal void ChangeTurn(object arg1, NextTurn turnData)
+        private void ChangeTurn(object arg1, NextTurn turnData)
         {
             if (_gameState != Enums.GameStates.Win)
             {
@@ -66,7 +67,7 @@ namespace Game_Managing
             }
         }
 
-        internal void PlayerLost(object arg1, PlayerLost data)
+        private void PlayerLost(object arg1, PlayerLost data)
         {
             var currentPlayerIndex = _players.FindIndex(player => player.Name == data.PlayerName);
             if (currentPlayerIndex != -1)

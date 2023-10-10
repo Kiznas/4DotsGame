@@ -3,21 +3,22 @@ using System;
 using CellLogic;
 using UnityEngine;
 using System.Linq;
+using ConstantValues;
+using Events.EventsManager;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using ConstantValues;
 
 namespace Game_Managing.CellsManager
 {
-    
     public class CellManager : IEventsUser
     {
-        public CellManager(Cell[] cells) {
+        public CellManager(Cell[] cells) 
+        {
             Cells = cells;
 
             _cellQueue = new Queue<Cell>();
         }
-
+        
         public readonly Cell[] Cells;
         private readonly Queue<Cell> _cellQueue;
         private readonly Stack<Cell> _stackToChange = new();
