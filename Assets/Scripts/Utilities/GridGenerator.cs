@@ -31,7 +31,7 @@ namespace Utilities
             var rect = containerRect.rect;
             float cellSize = Mathf.Min(rect.width / rows, rect.height / columns);
 
-            cellSize = Mathf.Min(cellSize, 1200);
+            cellSize = Mathf.Min(cellSize, 1000);
             int cellCount = rows * columns;
             gridLayout.cellSize = new Vector2(cellSize, cellSize);
         
