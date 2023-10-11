@@ -66,14 +66,14 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
-    - _startTime: 19.00717
+    - _startTime: 16.637018
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorToGradient: {r: 0, g: 0, b: 0, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _colorToGradient: {r: 0.12499094, g: 0, b: 1, a: 1}
-    - _prevColorToGradient: {r: 0, g: 1, b: 0.62499094, a: 1}
+    - _colorToGradient: {r: 0.90763855, g: 0, b: 1, a: 1}
+    - _prevColorToGradient: {r: 1, g: 0.40763855, b: 0, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &3888823970653084560
 MonoBehaviour:

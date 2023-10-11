@@ -10,6 +10,7 @@ namespace UI
         [Header("Buttons/Sliders/InputFields")]
         [SerializeField] private Button initializeButton;
         [SerializeField] private Button restart;
+        [SerializeField] private Button tutorial;
         [SerializeField] private Slider playersNumberSlider;
         [Header("Background")]
         [SerializeField] private GameObject background;
@@ -36,6 +37,7 @@ namespace UI
 
         public void TurnOffUnneededUI() {
             background.SetActive(true);
+            tutorial.gameObject.SetActive(false);
             initializeButton.gameObject.SetActive(false);
             playersNumberSlider.gameObject.SetActive(false);
             inputFields.customGridButton.gameObject.SetActive(false);

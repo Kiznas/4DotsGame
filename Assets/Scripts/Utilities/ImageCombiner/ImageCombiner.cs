@@ -3,9 +3,9 @@ using Assets;
 using ConstantValues;
 using UnityEngine;
 
-namespace Utilities
+namespace Utilities.ImageCombiner
 {
-    public class ImageCombine
+    public class ImageCombine : IImageCombine
     {
         private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>(AssetsPath.Images);
         private static readonly Sprite TransparentTexture = Resources.Load<Sprite>(AssetsPath.Transparent);
@@ -50,7 +50,7 @@ namespace Utilities
             return Sprite.Create(combinedImage, new Rect(0, 0, width, height), Vector2.zero);
         }
 
-        public static Sprite ClearImage()
+        public Sprite ClearImage()
         {
             return TransparentTexture;
         }

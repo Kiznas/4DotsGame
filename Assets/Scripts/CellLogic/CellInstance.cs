@@ -1,13 +1,12 @@
 using Events;
-using Utilities;
 using System.Linq;
 using UnityEngine;
-using Game_Managing;
 using ConstantValues;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using Events.EventsManager;
+using Utilities.ImageCombiner;
 
 namespace CellLogic
 {
@@ -113,9 +112,9 @@ namespace CellLogic
         }
 
         internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam) =>
-            image.sprite = Bootstrapper.Instance.ImageCombiner.CombineImages(numberOfDots, neighbours, cellTeam);
+            image.sprite = Services.AllServices.Container.Single<IImageCombine>().CombineImages(numberOfDots, neighbours, cellTeam);
 
         internal void ClearImage() =>
-            image.sprite = ImageCombine.ClearImage();
+            image.sprite = Services.AllServices.Container.Single<IImageCombine>().ClearImage();
     }
 }

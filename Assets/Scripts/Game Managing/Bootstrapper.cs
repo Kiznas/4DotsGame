@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using Infrastructure;
 using Game_Managing.CellsManager;
 using Game_Managing.Initialization;
+using Utilities.ImageCombiner;
 
 namespace Game_Managing
 {
@@ -53,13 +54,13 @@ namespace Game_Managing
         }
 
         public void InitializeComponents() {
-            ImageCombiner = new ImageCombine();
-
             _services = AllServices.Container;
             _services.RegisterSingle<IAssetProvider>(new AssetProvider());
             _services.RegisterSingle<IEventsManager>(new EventsManager());
+            _services.RegisterSingle<IImageCombine>(new ImageCombine());
             
             var playersMaterials = Resources.LoadAll<Material>(AssetsPath.Materials);
+            Extensions.Utilities.RandomizePlayersColors(out _playersColors);
             
             var (rowsSize, columnsSize) = GetGridSize();
             NumberOfPlayer = (int)_uiManager.PlayersNumSlider.value;
@@ -75,8 +76,7 @@ namespace Game_Managing
 
         private void InitializeAndRegisterEssentials()
         {
-            _turnSystem = new InitializeTurnSystem(backgroundImage, winPanel, this, winText, playerBotToggles, restartButton,
-                startButton, _playersColors);
+            _turnSystem = new InitializeTurnSystem(backgroundImage, winPanel, this, winText, playerBotToggles, restartButton, startButton, _playersColors);
             _bot = new BotLogic(this, _cellsManager);
             _services.Single<IEventsManager>().RegisterObject(_bot);
             _services.Single<IEventsManager>().RegisterObject(_turnSystem.TurnSystem);
@@ -86,7 +86,7 @@ namespace Game_Managing
         {
             GridGenerator gridGenerator = new GridGenerator(backgroundImage.gameObject, gridGameObject, _services.Single<IAssetProvider>());
             gridGenerator.GenerateGrid(rowsSize, columnsSize);
-            InitializeCells.AddCells(rowsSize, columnsSize, NumberOfPlayer, cells, Extensions.Utilities.RandomizePlayersColors(out _playersColors), playersMaterials);
+            InitializeCells.AddCells(rowsSize, columnsSize, NumberOfPlayer, cells, _playersColors, playersMaterials);
         }
 
         private Cell[] RegisterCells(int rowsSize, int columnsSize)

@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace TutorialScripts
@@ -7,16 +7,22 @@ namespace TutorialScripts
 	public class TutorialButton : MonoBehaviour
 	{
 		[SerializeField] private Button tutorialButton;
-		private const string TutorialScene = "TutorialScene";
+		[SerializeField] private GameObject objectToShowHide;
 
 		private void Start()
 		{
-			tutorialButton.onClick.AddListener(TurnTutorialScene);
+			tutorialButton.onClick.AddListener(ToggleObjectVisibility);
 		}
 
-		private void TurnTutorialScene()
+		private void OnDisable()
 		{
-			SceneManager.LoadScene(TutorialScene);
+			objectToShowHide.SetActive(false);
+		}
+
+
+		private void ToggleObjectVisibility()
+		{
+			objectToShowHide.SetActive(!objectToShowHide.activeSelf);
 		}
 	}
 }
