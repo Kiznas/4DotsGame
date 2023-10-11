@@ -4461,8 +4461,8 @@ MonoBehaviour:
     1) When you will have a turn the background will
     be in color of your cell.
 
-    2) If u want to spread your cell just press on
-    it.
+    2) If u want to add dot to your cell just press
+    on it.
 
     3) Goal of game is to capture all enemy cells, to do that just spread
     your cell near their and you will capture them.
