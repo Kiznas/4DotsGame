@@ -14,22 +14,25 @@ namespace UI
         [SerializeField] private int minSize;
         [SerializeField] private int maxSize;
 
+        public (int, int) GetGridSize() => 
+                    customGridButton.CompareTag(ConstantValues.Constants.Regular) ? 
+                                (int.Parse(gridSizeInput.text), int.Parse(gridSizeInput.text)) :
+                                (int.Parse(rowInput.text), int.Parse(columnInput.text));
+        
         private void Start() {
             customGridButton.onClick.AddListener(CustomGridSettings);
-            gridSizeInput.onEndEdit.AddListener(delegate { MyValidate(gridSizeInput); });
-            rowInput.onEndEdit.AddListener(delegate { MyValidate(rowInput); });
-            columnInput.onEndEdit.AddListener(delegate { MyValidate(columnInput); });
+            gridSizeInput.onEndEdit.AddListener(delegate { ValidateInput(gridSizeInput); });
+            rowInput.onEndEdit.AddListener(delegate { ValidateInput(rowInput); });
+            columnInput.onEndEdit.AddListener(delegate { ValidateInput(columnInput); });
             Application.targetFrameRate = 144;
             QualitySettings.vSyncCount = 0;
         }
-
         private void OnDestroy() {
             customGridButton.onClick.RemoveAllListeners();
             gridSizeInput.onEndEdit.RemoveAllListeners();
             rowInput.onEndEdit.RemoveAllListeners();
             columnInput.onEndEdit.RemoveAllListeners();
         }
-    
         private void CustomGridSettings()
         {
             if (customGridButton.CompareTag(ConstantValues.Constants.Regular)) {
@@ -45,13 +48,7 @@ namespace UI
                 customGridButton.GetComponentInChildren<TMP_Text>().text = ConstantValues.Constants.Custom;
             }
         }
-    
-        public (int, int) GetGridSize() => 
-            customGridButton.CompareTag(ConstantValues.Constants.Regular) ? 
-                (int.Parse(gridSizeInput.text), int.Parse(gridSizeInput.text)) :
-                (int.Parse(rowInput.text), int.Parse(columnInput.text));
-    
-        private void MyValidate(TMP_InputField inputField) {
+        private void ValidateInput(TMP_InputField inputField) {
             var text = inputField.text;
 
             if (string.IsNullOrEmpty(text) || text == "-")
@@ -62,7 +59,6 @@ namespace UI
             }
             inputField.text = GetValidValue(text, minSize, maxSize);
         }
-
         private static string GetValidValue(string text, int minValue, int maxValue) {
             if (int.TryParse(text, out var number)) {
                 if (number < minValue)

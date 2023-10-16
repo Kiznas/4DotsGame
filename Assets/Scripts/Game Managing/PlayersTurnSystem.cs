@@ -61,9 +61,8 @@ namespace Game_Managing
                 ChangeShaderValues(_prevPlayerColor, _players[nextPlayerIndex].TeamColor);
 
                 _currentPlayerIndex = nextPlayerIndex;
-                _gameState = _players[_currentPlayerIndex].GameState;
 
-                EventAggregator.Post(this, new GetTurn { GameState = _gameState });
+                EventAggregator.Post(this, new GetTurn { Team = _players[_currentPlayerIndex].Team });
             }
         }
 

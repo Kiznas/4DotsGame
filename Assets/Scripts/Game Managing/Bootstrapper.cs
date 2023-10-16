@@ -28,7 +28,7 @@ namespace Game_Managing
         [SerializeField] private Toggle[] playerBotToggles;
         
         public static Bootstrapper Instance;
-        public ImageCombine ImageCombiner;
+        public ImageCombiner ImageCombiner;
 
         private BotLogic _bot;
         private UIManager _uiManager;
@@ -57,7 +57,7 @@ namespace Game_Managing
             _services = AllServices.Container;
             _services.RegisterSingle<IAssetProvider>(new AssetProvider());
             _services.RegisterSingle<IEventsManager>(new EventsManager());
-            _services.RegisterSingle<IImageCombine>(new ImageCombine());
+            _services.RegisterSingle<IImageCombineService>(new ImageCombiner());
             
             var playersMaterials = Resources.LoadAll<Material>(AssetsPath.Materials);
             Extensions.Utilities.RandomizePlayersColors(out _playersColors);

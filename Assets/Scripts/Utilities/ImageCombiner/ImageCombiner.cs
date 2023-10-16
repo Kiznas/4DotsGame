@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Utilities.ImageCombiner
 {
-    public class ImageCombine : IImageCombine
+    public class ImageCombiner : IImageCombineService
     {
         private readonly Texture2D[] _sourceImages = Resources.LoadAll<Texture2D>(AssetsPath.Images);
         private static readonly Sprite TransparentTexture = Resources.Load<Sprite>(AssetsPath.Transparent);

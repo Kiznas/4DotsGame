@@ -8,21 +8,12 @@ namespace TutorialScripts
 	{
 		[SerializeField] private Button tutorialButton;
 		[SerializeField] private GameObject objectToShowHide;
-
-		private void Start()
-		{
-			tutorialButton.onClick.AddListener(ToggleObjectVisibility);
-		}
-
-		private void OnDisable()
-		{
-			objectToShowHide.SetActive(false);
-		}
-
-
-		private void ToggleObjectVisibility()
-		{
-			objectToShowHide.SetActive(!objectToShowHide.activeSelf);
-		}
+		
+		private void Start() => 
+					tutorialButton.onClick.AddListener(ToggleObjectVisibility);
+		private void OnDisable() =>
+					objectToShowHide.SetActive(false);
+		private void ToggleObjectVisibility() => 
+					objectToShowHide.SetActive(!objectToShowHide.activeSelf);
 	}
 }

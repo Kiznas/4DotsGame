@@ -7,7 +7,7 @@ namespace BotScripts
 {
     public static class BotExtensions
     {
-        public static Cell GetBotCellToAttack(List<Cell> botCells)
+        internal static Cell GetBotCellToAttack(List<Cell> botCells)
         {
             for (int i = 3; i > 0; i--)
             {
@@ -20,27 +20,8 @@ namespace BotScripts
             }
             return null;
         }
-        
-        private static Cell FindBotCellWithDotsAdjacentToOpponent(List<Cell> botCells, int botDots, int opponentDots)
-        {
-            foreach (var botCell in botCells)
-            {
-                if (botCell.NumberOfDots == botDots)
-                {
-                    var adjacentOpponentCell = botCell.Neighbours.FirstOrDefault(cell => 
-                        cell != null &&
-                        cell.NumberOfDots == opponentDots && 
-                        cell.CellTeam != botCell.CellTeam);
-                    
-                    if (adjacentOpponentCell != null)
-                        return botCell;
-                }
-            }
 
-            return null;
-        }
-
-        public static Cell FindClosestBotCellToOpponentCell(List<Cell> botCells, List<Cell> opponentCells)
+        internal static Cell FindClosestBotCellToOpponentCell(List<Cell> botCells, List<Cell> opponentCells)
         {
             Cell closestBotCell = null;
             float shortestDistance = float.MaxValue;
@@ -59,6 +40,25 @@ namespace BotScripts
             }
 
             return closestBotCell;
+        }
+
+        private static Cell FindBotCellWithDotsAdjacentToOpponent(List<Cell> botCells, int botDots, int opponentDots)
+        {
+            foreach (var botCell in botCells)
+            {
+                if (botCell.NumberOfDots == botDots)
+                {
+                    var adjacentOpponentCell = botCell.Neighbours.FirstOrDefault(cell => 
+                        cell != null &&
+                        cell.NumberOfDots == opponentDots && 
+                        cell.CellTeam != botCell.CellTeam);
+                    
+                    if (adjacentOpponentCell != null)
+                        return botCell;
+                }
+            }
+
+            return null;
         }
 
         private static float GetDistanceBetweenCells(Cell cell1, Cell cell2)

@@ -9,6 +9,18 @@ namespace Game_Managing.CellsManager
 {
     public static class CellManagerExtensions
     {
+        private static void StackAdd(Cell cell, Stack<Cell> stackToChange)
+        {
+            if (cell != null)
+            {
+                var cells = new List<Cell> { cell };
+                cells.AddRange(cell.Neighbours.Where(neighbour => neighbour != null));
+
+                foreach (var item in cells.Where(item => item != null && !stackToChange.Contains(item)))
+                    stackToChange.Push(item);
+            }
+        }
+
         internal static HashSet<Enums.Team> CheckAliveTeams(HashSet<Enums.Team> previouslyAliveTeams, Cell[] cells, CellManager cellManager)
         {
             var aliveTeams = new HashSet<Enums.Team>(cells.Select(cell => cell.CellTeam));
@@ -37,18 +49,6 @@ namespace Game_Managing.CellsManager
             }
 
             cell.ClearCell();
-        }
-
-        private static void StackAdd(Cell cell, Stack<Cell> stackToChange)
-        {
-            if (cell != null)
-            {
-                var cells = new List<Cell> { cell };
-                cells.AddRange(cell.Neighbours.Where(neighbour => neighbour != null));
-
-                foreach (var item in cells.Where(item => item != null && !stackToChange.Contains(item)))
-                    stackToChange.Push(item);
-            }
         }
     }
 }

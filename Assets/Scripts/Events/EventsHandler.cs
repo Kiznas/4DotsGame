@@ -8,6 +8,6 @@ namespace Events
     public class AddBots { public List<Enums.Team> Teams; }
     public class AddToNearbyCells { public CellLogic.Cell Cell; }
     public class PlayerLost { public string PlayerName; }
-    public class GetTurn { public Enums.GameStates GameState; }
+    public class GetTurn { public Enums.Team Team; }
     public class PrepareForNextTurn { public Enums.Team CellTeam; }
 }

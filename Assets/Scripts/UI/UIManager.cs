@@ -21,20 +21,6 @@ namespace UI
 
         public Slider PlayersNumSlider => playersNumberSlider;
 
-        private void Start() {
-            initializeButton.onClick.AddListener(gameManager.InitializeComponents);
-            restart.onClick.AddListener(RestartGame);
-        }
-
-        private void OnDestroy() {
-            initializeButton.onClick.RemoveAllListeners();
-            restart.onClick.RemoveAllListeners();
-
-        }
-        private static void RestartGame() {
-            SceneManager.LoadScene(0);
-        }
-
         public void TurnOffUnneededUI() {
             background.SetActive(true);
             tutorial.gameObject.SetActive(false);
@@ -42,6 +28,19 @@ namespace UI
             playersNumberSlider.gameObject.SetActive(false);
             inputFields.customGridButton.gameObject.SetActive(false);
             gridSetting.SetActive(false);
+        }
+
+        private void Start() {
+            initializeButton.onClick.AddListener(gameManager.InitializeComponents);
+            restart.onClick.AddListener(RestartGame);
+        }
+        private void OnDestroy() {
+            initializeButton.onClick.RemoveAllListeners();
+            restart.onClick.RemoveAllListeners();
+
+        }
+        private static void RestartGame() {
+            SceneManager.LoadScene(0);
         }
     }
 }

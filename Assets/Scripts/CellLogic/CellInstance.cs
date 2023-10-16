@@ -1,5 +1,4 @@
 using Events;
-using System.Linq;
 using UnityEngine;
 using ConstantValues;
 using UnityEngine.UI;
@@ -35,10 +34,12 @@ namespace CellLogic
             EventAggregator.Unsubscribe<AddBots>(AddBotsTeams);
         }
 
-        private void OnDestroy()
+        public IEnumerator AddToNearby()
         {
-            button.onClick.RemoveAllListeners();
-            Unsubscribe();
+            yield return new WaitForSeconds(Constants.SpeedOfGame);
+
+            StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
+            EventAggregator.Post(this, new AddToNearbyCells { Cell = _cell });
         }
 
         public void CreateCellInstance(int row, int column)
@@ -49,14 +50,20 @@ namespace CellLogic
             Subscribe();
         }
 
+        private void OnDestroy()
+        {
+            button.onClick.RemoveAllListeners();
+            Unsubscribe();
+        }
+
         private void AddBotsTeams(object arg1, AddBots data)
         {
             _botTeams = data.Teams;
         }
 
-        private void PrepareTurn(object arg1, PrepareForNextTurn team)
+        private void PrepareTurn(object arg1, PrepareForNextTurn turn)
         {
-            if (team.CellTeam == _cell.CellTeam)
+            if (turn.CellTeam == _cell.CellTeam)
             {
                 _teamTurn = false;
             }
@@ -64,10 +71,9 @@ namespace CellLogic
 
         private void SetTurn(object arg1, GetTurn turn)
         {
-            if (_cell.CellTeam != Enums.Team.None)
+            if (_cell.CellTeam != Enums.Team.None && !_botTeams.Contains(turn.Team))
             {
-                var reversed = Constants.TeamsDictionary.ToDictionary(x => x.Value, x => x.Key);
-                if (turn.GameState == Constants.TeamsDictionary[_cell.CellTeam] && !_botTeams.Contains(reversed[turn.GameState]))
+                if (turn.Team == _cell.CellTeam)
                 {
                     _teamTurn = true;
                 }
@@ -90,31 +96,28 @@ namespace CellLogic
             EventAggregator.Post(this, new NextTurn { CellTeam = _cell.CellTeam });
         }
 
-        public IEnumerator AddToNearby()
-        {
-            yield return new WaitForSeconds(Constants.SpeedOfGame);
-
-            StartCoroutine(SpreadAnimation(false, _cell.TeamColor));
-            EventAggregator.Post(this, new AddToNearbyCells { Cell = _cell });
-        }
-
         private IEnumerator SpreadAnimation(bool withDelay, Color teamColor)
         {
             if (withDelay)
                 yield return new WaitForSeconds(Constants.SpeedOfGame);
 
+            ParticleCreation(teamColor);
+            yield return null;
+        }
+
+        private void ParticleCreation(Color teamColor)
+        {
             var o = gameObject;
             var system = Instantiate(particle, o.transform.position, o.transform.rotation, o.transform);
             var particleMain = system.main;
             particleMain.startColor = teamColor;
             Destroy(system.gameObject, 3f);
-            yield return null;
         }
 
         internal void CreateImage(int numberOfDots, Cell[] neighbours, Enums.Team cellTeam) =>
-            image.sprite = Services.AllServices.Container.Single<IImageCombine>().CombineImages(numberOfDots, neighbours, cellTeam);
+            image.sprite = Services.AllServices.Container.Single<IImageCombineService>().CombineImages(numberOfDots, neighbours, cellTeam);
 
         internal void ClearImage() =>
-            image.sprite = Services.AllServices.Container.Single<IImageCombine>().ClearImage();
+            image.sprite = Services.AllServices.Container.Single<IImageCombineService>().ClearImage();
     }
 }

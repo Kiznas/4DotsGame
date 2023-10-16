@@ -12,9 +12,7 @@ namespace CellLogic
         public Color TeamColor { get; private set; } = Color.white;
         public Material Material { get; private set; }
         public CellInstance CellInstance { get; }
-
         public Cell[] Neighbours { get; set; }
-
         public Cell(int posX, int posY, CellInstance cellInstance)
         {
             PosRow = posX;
@@ -51,7 +49,6 @@ namespace CellLogic
             NumberOfDots = 0;
             CellInstance.ClearImage();
         }
-
         public void UpdateImage()
         {
             if (NumberOfDots != 0 && CellTeam != Enums.Team.None)

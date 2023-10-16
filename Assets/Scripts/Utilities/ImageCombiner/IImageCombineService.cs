@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Utilities.ImageCombiner
 {
-	public interface IImageCombine : IService
+	public interface IImageCombineService : IService
 	{
 		Sprite CombineImages(int numberOfDots, CellLogic.Cell[] neighbours, Enums.Team team);
 		Sprite ClearImage();

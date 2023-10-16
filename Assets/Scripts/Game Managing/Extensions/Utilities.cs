@@ -4,7 +4,7 @@ namespace Game_Managing.Extensions
 {
     public static class Utilities
     {
-        public static Color[] RandomizePlayersColors(out Color[] playersColors)
+        public static void RandomizePlayersColors(out Color[] playersColors)
         {
             playersColors = new Color[4];
             float randomHue = Random.Range(0f, 1f);
@@ -15,8 +15,6 @@ namespace Game_Managing.Extensions
                 if (randomHue >= 1f)
                     randomHue -= 1f;
             }
-
-            return playersColors;
         }
     }
 }

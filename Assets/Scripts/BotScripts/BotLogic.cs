@@ -18,6 +18,8 @@ namespace BotScripts
         private static readonly int IsGlowing = Shader.PropertyToID("_IsGlowing");
         
         private List<Enums.Team> _botTeams = new();
+        private List<Cell> _botCells = new();
+        private List<Cell> _opponentCells = new();
 
         public BotLogic(ICoroutineRunner coroutineRunner, CellManager cellManager)
         {
@@ -44,10 +46,8 @@ namespace BotScripts
 
         private void OnGetTurn(object sender, GetTurn turnData)
         {
-            foreach (var botTeam in _botTeams.Where(botTeam => turnData.GameState == Constants.TeamsDictionary[botTeam]))
-            {
-                _coroutineRunner.StartCoroutine(BotDelay(botTeam));
-                return;
+            if(_botTeams.Contains(turnData.Team)){
+                _coroutineRunner.StartCoroutine(BotDelay(turnData.Team));
             }
         }
 
@@ -59,22 +59,22 @@ namespace BotScripts
 
         private void TakeBotTurn(Enums.Team botTeam)
         {
-            var botCells = _cellManager.Cells
+            _botCells = _cellManager.Cells
                 .Where(cell => cell.CellTeam == botTeam)
                 .ToList();
 
-            var opponentCells = _cellManager.Cells
+            _opponentCells = _cellManager.Cells
                 .Where(cell => cell.CellTeam != botTeam && cell.CellTeam != Enums.Team.None)
                 .ToList();
 
-            var botCellToAttack = BotExtensions.GetBotCellToAttack(botCells);
+            var botCellToAttack = BotExtensions.GetBotCellToAttack(_botCells);
             if (botCellToAttack != null)
             {
                 ProcessBotCellTurn(botCellToAttack, botTeam);
                 return;
             }
             
-            var closestBotCellToOpponentCell = BotExtensions.FindClosestBotCellToOpponentCell(botCells, opponentCells);
+            var closestBotCellToOpponentCell = BotExtensions.FindClosestBotCellToOpponentCell(_botCells, _opponentCells);
             if (closestBotCellToOpponentCell != null)
             {
                 ProcessBotCellTurn(closestBotCellToOpponentCell, botTeam);
